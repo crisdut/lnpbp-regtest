@@ -1,8 +1,8 @@
-# Modified from original at https://github.com/ruimarinho/docker-bitcoin-core/tree/master/0.22/alpine/Dockerfile
+# Modified from original at https://github.com/ruimarinho/docker-bitcoin-core/blob/master/22/Dockerfile
 
 # The MIT License (MIT)
 
-# Copyright (c) 2015 Rui Marinho
+# Copyright (c) 2022 Rui Marinho
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
