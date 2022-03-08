@@ -1,0 +1,28 @@
+version: "2.4"
+
+networks:
+  srnet:
+    driver: bridge
+
+volumes:
+  lnp_data:
+
+services:
+  lnp-node:
+    container_name: ${COMPOSE_PROJECT_NAME}_lnp
+    image: stk-sr/lnp:${LNP_VERSION}-slim
+    restart: unless-stopped
+    command: [
+      "-vvvv",
+      "--chain=regtest",
+      "--port=${LNP_RPC_PORT}"      
+    ]
+    ports:
+      - "127.0.0.1:${LNP_PORT}:${LNP_PORT}"
+      - "127.0.0.1:${LNP_RPC_PORT}:${LNP_RPC_PORT}"
+    depends_on:
+      - electrs
+    networks:
+      srnet:
+        aliases:
+          - ${LNP_HOST}
