@@ -14,8 +14,10 @@ services:
     restart: unless-stopped
     command: [
       "-vvvv",
-      "--chain=regtest",
-      "--port=${LNP_RPC_PORT}"      
+      "--chain=testnet",
+      "--port=${LNP_RPC_PORT}",
+      "--electrum-port=${ELECTRS_PORT}",
+      "--electrum-server=${ELECTRS_HOST}",
     ]
     ports:
       - "127.0.0.1:${LNP_PORT}:${LNP_PORT}"

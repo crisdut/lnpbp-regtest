@@ -26,11 +26,27 @@ L2_SET="lnp-node"
 L3_SET="rgb-node"
 
 function setup_command() {
-    # bitcoin-cli
     bcli="docker-compose exec bitcoin bitcoin-cli -chain=regtest -rpcconnect=localhost -rpcport=${BITCOIN_RPC_PORT} -rpcuser=${BITCOIN_RPC_USER} -rpcpassword=${BITCOIN_RPC_PASSWORD}"
-    alias bitcoin-cli="${bcli}"
+    
+    lncli="docker-compose exec lnp-node lnpd --chain=testnet --port=${LNP_RPC_PORT} --electrum-port=${ELECTRS_PORT} --electrum-server=${ELECTRS_HOST} -vvvv"
+    
+    # libbitcoin
+    seed=$(bx seed -b 256 | bx mnemonic-new)
+    pk=$(bx seed -b 256 | bx mnemonic-new | bx mnemonic-to-seed | bx base16-decode | sha512sum - | cut -c 1-64)
+    
+    # Initialize L1 
+    $bcli -named createwallet wallet_name='base' blank=true  
+    $bcli -rpcwallet=base importprivkey $pk
 
-    echo $bcli
+    echo 'Your Seed: ' $seed
+    echo 'Your PK: ' $pk
+
+    # Initialize L2
+    # get xprv here: https://iancoleman.io/bip39/#english
+    lncli init -vvvv
+    lncli -vvvv
+
+    # Initialize L3
 }
 
 case "$COMMAND" in
