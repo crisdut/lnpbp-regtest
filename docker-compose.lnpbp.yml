@@ -1,11 +1,8 @@
 version: "2.4"
 
-networks:
-  srnet:
-    driver: bridge
-
 volumes:
   lnp_data:
+  rgb_data:
 
 services:
   lnp-node:
@@ -14,7 +11,7 @@ services:
     restart: unless-stopped
     command: [
       "-vvvv",
-      "--chain=testnet",
+      "--chain=regtest",
       "--port=${LNP_RPC_PORT}",
       "--electrum-port=${ELECTRS_PORT}",
       "--electrum-server=${ELECTRS_HOST}",
@@ -24,7 +21,29 @@ services:
       - "127.0.0.1:${LNP_RPC_PORT}:${LNP_RPC_PORT}"
     depends_on:
       - electrs
+    volumes:
+      - lnp_data:/var/lib/lnp/.lnp_node/
     networks:
       srnet:
         aliases:
           - ${LNP_HOST}
+
+  rgb-node:
+    container_name: ${COMPOSE_PROJECT_NAME}_rgb
+    image: stk-sr/rgb:${RGB_VERSION}-slim
+    restart: unless-stopped
+    command: [
+      "-vvvv",
+      "--network=regtest",
+      "--bin-dir=${RGB_BIN_DIR}",
+      "--data-dir=${RGB_DATA_DIR}",
+      "--electrum=${ELECTRS_HOST}:${ELECTRS_PORT}" 
+    ]
+    depends_on:
+      - electrs
+    volumes:
+      - rgb_data:/var/lib/rgb      
+    networks:
+      srnet:
+        aliases:
+          - ${RGB_HOST}
