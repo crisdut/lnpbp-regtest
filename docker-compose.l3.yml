@@ -1,0 +1,48 @@
+version: "2.4"
+
+volumes:
+  lnp_data:
+  rgb_data:
+
+services:
+  rgb1:
+    container_name: ${COMPOSE_PROJECT_NAME}_rgb1
+    image: stk-sr/rgb:${RGB_VERSION}-slim
+    restart: unless-stopped
+    command:
+      [
+        "-vvvv",
+        "--network=regtest",
+        "--bin-dir=${RGB_BIN_DIR}",
+        "--data-dir=${RGB_DATA_DIR}",
+        "--electrum=${ELECTRS_HOST}:${ELECTRS_PORT}",
+      ]
+    depends_on:
+      - electrs
+    volumes:
+      - rgb_data:/var/lib/rgb
+    networks:
+      srnet:
+        aliases:
+          - ${RGB_HOST_1}
+
+  rgb2:
+    container_name: ${COMPOSE_PROJECT_NAME}_rgb2
+    image: stk-sr/rgb:${RGB_VERSION}-slim
+    restart: unless-stopped
+    command:
+      [
+        "-vvvv",
+        "--network=regtest",
+        "--bin-dir=${RGB_BIN_DIR}",
+        "--data-dir=${RGB_DATA_DIR}",
+        "--electrum=${ELECTRS_HOST}:${ELECTRS_PORT}",
+      ]
+    depends_on:
+      - electrs
+    volumes:
+      - rgb_data:/var/lib/rgb
+    networks:
+      srnet:
+        aliases:
+          - ${RGB_HOST_2}
