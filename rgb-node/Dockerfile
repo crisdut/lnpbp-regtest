@@ -45,6 +45,8 @@ COPY --from=builder --chown=${USER}:${USER} \
 WORKDIR "${BIN_DIR}"
 USER ${USER}
 
+COPY ./data/*.psbt ./
+
 VOLUME "$DATA_DIR"
 
 EXPOSE 6666
