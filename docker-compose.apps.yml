@@ -1,0 +1,25 @@
+version: "2.4"
+services:
+  electrs:
+    container_name: ${COMPOSE_PROJECT_NAME}_electrs
+    image: stk-sr/electrs:${ELECTRS_VERSION}-alpine
+    restart: unless-stopped
+    command:
+      [
+        "electrs",
+        "-vvvv",
+        "--timestamp",
+        "--network=regtest",
+        "--db-dir=/home/electrs/db",
+        "--electrum-rpc-addr=0.0.0.0:${ELECTRS_PORT}",
+        "--daemon-p2p-addr=node1:${BITCOIN_PORT}",
+        "--daemon-rpc-addr=node1:${BITCOIN_RPC_PORT}"
+      ]
+    # ports:
+    #   - "127.0.0.1:${ELECTRS_PORT}:${ELECTRS_PORT}"
+    depends_on:
+      - node1
+    networks:
+      srnet:
+        aliases:
+          - ${ELECTRS_HOST}
