@@ -46,25 +46,29 @@ bx seed -b 128 | bx mnemonic-new | bx mnemonic-to-seed -p "" | bx hd-new
 
 ```bash
 # 0- Generate and/or Load wallets
-b01 -named createwallet wallet_name='alpha' descriptor=true # or  b01 loadwallet alpha
-b01 -named createwallet wallet_name='beta' descriptor=true # or  b02 loadwallet beta
+b01 -named createwallet wallet_name='alpha' descriptors=true # or  b01 loadwallet alpha
+b01 -named createwallet wallet_name='beta' descriptors=true # or  b02 loadwallet beta
 
 # 1- Generate two bitcoin address
 addr1="b01 -rpcwallet=alpha getnewaddress"
 addr2="b01 -rpcwallet=beta getnewaddress"
+addr3="b01 -rpcwallet=beta getnewaddress"
 
-# 2- Generate new blocks
-b01 generatetoaddress 150 $addr1
-b01 generatetoaddress 150 $addr2
+# 2- Generate new blocks and transfer
+b01 generatetoaddress 500 $addr1
+b01 -rpcwallet=alpha settxfee 0.00001
+b01 -rpcwallet=alpha sendtoaddress $addr2 2 
+b01 -rpcwallet=alpha sendtoaddress $addr3 1 
+b01 -rpcwallet=beta listunspent
 
 # 3- Add TxOut Information
-b01 -rpcwallet=beta listtransactions
+b01 -rpcwallet=alpha listtransactions
 $txid='' #1dc2dfa2988dd35116e2ac3ce17d8d87afd282ce675a9f2a3916fc5c6cbcb08c
 $out=''  #0
 
 # 4- Generate new issue
 ticker="'STK01'"
-name="'New Issue Description'"
+name="'Fungible (Sample)'"
 rgb01 fungible issue $ticker $name --precision 0 1@$txid:$out
 #-- return $contract_id=rgb1qzkpy3wrt2xyms7lhc67lrr6v93x3a7tkjxr698286qarx2n3wcslhlevj
 
