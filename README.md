@@ -63,29 +63,38 @@ b01 -rpcwallet=beta listunspent
 
 # 3- Add TxOut Information
 b01 -rpcwallet=alpha listtransactions
-$txid='' #1dc2dfa2988dd35116e2ac3ce17d8d87afd282ce675a9f2a3916fc5c6cbcb08c
-$out=''  #0
+# Example
+# $txid='1dc2dfa2988dd35116e2ac3ce17d8d87afd282ce675a9f2a3916fc5c6cbcb08c'
+# $out='0'
+
+# $change_txid='1dc2dfa2988dd35116e2ac3ce17d8d87afd282ce675a9f2a3916fc5c6cbcb08c'
+# $change_out='0'
+
+# $dest_txid='1dc2dfa2988dd35116e2ac3ce17d8d87afd282ce675a9f2a3916fc5c6cbcb08c'
+# $dest_out='0'
 
 # 4- Generate new issue
-ticker="'STK01'"
-name="'Fungible (Sample)'"
+ticker="STK01"
+name="Fungible (Sample)"
 rgb01 fungible issue $ticker $name --precision 0 1@$txid:$out
-#-- return $contract_id=rgb1qzkpy3wrt2xyms7lhc67lrr6v93x3a7tkjxr698286qarx2n3wcslhlevj
+# Example
+# $contract_id=rgb1qzkpy3wrt2xyms7lhc67lrr6v93x3a7tkjxr698286qarx2n3wcslhlevj
 
 # 5- Generate blind utxo
-rgb01 fungible blind $txid:$out
-#-- return $blind="utxob17cemvl28ctgnrx45shx2z7nxz3hlkspvupd6ay78laqdn9ysc2zsjkm6t8"
-#-- return $blind_secret="8418017085025344047"
+rgb02 fungible blind $dest_txid:$dest_out
+#Example
+# $blind="utxob17cemvl28ctgnrx45shx2z7nxz3hlkspvupd6ay78laqdn9ysc2zsjkm6t8"
+# $blind_secret="8418017085025344047"
 
 # 6- Generate psbt source
 
-# 7- Generate psbt destination
-
-# 8- Create new transfer
-rgb01 fungible transfer $dest_txid 1 $contract_id $psbt ./tmp/consignment.rgb ./tmp/disclosure.rgb ./tmp/invoice.rgb
+# 7- Create new transfer
+rgb01 fungible transfer $blind 1 $asset_id $psbt /var/lib/rgb/consignment.rgb /var/lib/rgb/disclosure.rgb /var/lib/rgb/invoice.rgb -a $txid:$out -i $change_txid:$change_out
 
 # 9- Accept transfer
+rgb02 fungible accept /var/lib/rgb/consignment.rgb $dest_txid:$ $blind_secret
 
-# 10- Check transfer
+# 10- Check transfer (Updated)
+rgb01 fungible enclose /var/lib/rgb/disclosure.rgb
 
 ```
