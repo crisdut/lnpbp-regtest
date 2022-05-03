@@ -1,4 +1,4 @@
-# Docker setup for Satoshi Racer Integration (Bitcoin, LNP, RGB & DiscretLog Contract) in regtest mode
+# Docker setup for Bitcoin (LNP, RGB & DLC integration) in regtest mode
 
 ### ONLY FOR DEVELOPMENT and TESTING. These tools may not be suitable for production deployments.
 
