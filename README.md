@@ -1,4 +1,4 @@
-# Docker setup for Bitcoin (LNP, RGB & DLC integration) in regtest mode
+# Docker setup for Satoshi Racer Nodes (LNP, RGB & DLC integration) in regtest mode
 
 ### ONLY FOR DEVELOPMENT and TESTING. These tools may not be suitable for production deployments.
 
@@ -17,29 +17,20 @@
 
 ```bash
 # Build Docker Images
-docker build . -t stk-sr/lnp:0.5.0-slim
-docker build . -t stk-sr/rgb:0.4.0-slim
-docker build . -t stk-sr/electrs:0.9.0-alpine
-docker build . -t stk-sr/bitcoin:22.0-alpine
+docker build . -t sr-rgb:0.1.0
+docker build . -t sr-btc:0.1.0
+docker build . -t sr-electrs:0.1.0
 
 # Command Alias (Docker)
 alias b01="docker-compose exec node1 bitcoin-cli -chain=regtest -rpcconnect=localhost -rpcport=18889 -rpcuser=bitcoin -rpcpassword=bitcoin"
-alias b02="docker-compose exec node2 bitcoin-cli -chain=regtest -rpcconnect=localhost -rpcport=18889 -rpcuser=bitcoin -rpcpassword=bitcoin"
-alias ln01="docker-compose exec lnp1 lnp-cli"
 alias rgb01="docker-compose exec rgb1 rgb-cli --network=regtest --data-dir=/var/lib/rgb/"
 alias rgb02="docker-compose exec rgb2 rgb-cli --network=regtest --data-dir=/var/lib/rgb/"
-
-alias lnpd1="docker-compose run --rm lnp1 --network=regtest --electrum-port=50001 --electrum-server=electrs"
-alias lnpd2="docker-compose run --rm lnp2 --network=regtest --electrum-port=50001 --electrum-server=electrs"
 
 alias rgbd1="docker-compose run --rm rgb1 --network=regtest --bin-dir=/usr/local/bin/ --data-dir=/var/lib/rgb/ --electrum=electrs:50001"
 alias rgbd2="docker-compose run --rm rgb2 --network=regtest --bin-dir=/usr/local/bin/ --data-dir=/var/lib/rgb/ --electrum=electrs:50001"
 
 # Update rust
 rustup component add rust-src --toolchain nightly
-
-# Generate private key (libbitcoin)
-bx seed -b 128 | bx mnemonic-new | bx mnemonic-to-seed -p "" | bx hd-new
 ```
 
 ### Generate Token

@@ -1,8 +1,9 @@
 version: "2.4"
 services:
   electrs:
+    build:
+      context: ./electrs/  
     container_name: ${COMPOSE_PROJECT_NAME}_electrs
-    image: stk-sr/electrs:${ELECTRS_VERSION}-alpine
     restart: unless-stopped
     command:
       [

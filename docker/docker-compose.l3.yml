@@ -5,8 +5,9 @@ volumes:
 
 services:
   rgb1:
-    container_name: ${COMPOSE_PROJECT_NAME}_rgb1
-    image: stk-sr/rgb:${RGB_VERSION}-slim
+    build:
+      context: ./rgb-node/  
+    container_name: rgb1
     restart: unless-stopped
     command:
       [
@@ -26,8 +27,9 @@ services:
           - ${RGB_HOST_1}
 
   rgb2:
-    container_name: ${COMPOSE_PROJECT_NAME}_rgb2
-    image: stk-sr/rgb:${RGB_VERSION}-slim
+    build:
+      context: ./rgb-node/
+    container_name: rgb2
     restart: unless-stopped
     command:
       [

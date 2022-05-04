@@ -10,8 +10,9 @@ volumes:
 
 services:
   node1:
-    container_name: ${COMPOSE_PROJECT_NAME}_bitcoin
-    image: stk-sr/bitcoin:${BITCOIN_VERSION}-alpine
+    build:
+      context: ./bitcoin/  
+    container_name: node1
     restart: unless-stopped
     command: [
       "-regtest=1",
