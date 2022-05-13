@@ -1,12 +1,7 @@
 version: "2.4"
-
 networks:
   srnet:
     driver: bridge
-
-volumes:
-  cln_data:
-  cln_shared:
 
 services:
   cln1:
@@ -26,10 +21,12 @@ services:
       "--bitcoin-rpcuser=${BITCOIN_RPC_USER}",
       "--bitcoin-rpcpassword=${BITCOIN_RPC_PASSWORD}"
     ]
+    depends_on:
+      - node1    
     networks:
       srnet:
         aliases:
           - ${CLN_HOST_1}
     volumes:
       - cln_data:/home/clightning/.lightning
-      - cln_shared:/elements
+      - bitcoin_shared:/bitcoin      

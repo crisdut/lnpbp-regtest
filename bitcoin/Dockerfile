@@ -23,7 +23,7 @@
 # THE SOFTWARE.
 
 # Build stage for BerkeleyDB
-FROM alpine as berkeleydb
+FROM alpine:3.12 as berkeleydb
 
 RUN sed -i 's/http\:\/\/dl-cdn.alpinelinux.org/https\:\/\/alpine.global.ssl.fastly.net/g' /etc/apk/repositories
 RUN apk --no-cache add autoconf
@@ -47,7 +47,7 @@ RUN make install
 RUN rm -rf ${BERKELEYDB_PREFIX}/docs
 
 # Build stage for Bitcoin Core
-FROM alpine as bitcoin-core
+FROM alpine:3.12 as bitcoin-core
 
 COPY --from=berkeleydb /opt /opt
 
@@ -77,7 +77,7 @@ RUN apk --no-cache add zeromq-dev
 # RUN timeout 32s gpg  --keyserver keys.openpgp.org  --recv-keys $KEYS2
 
 ENV BITCOIN_VERSION=22.0
-ENV BITCOIN_PREFIX=/opt/bitcoin-${BITCOIN_VERSION}
+ENV BITCOIN_PREFIX=/opt/bitcoin
 
 RUN wget https://bitcoincore.org/bin/bitcoin-core-${BITCOIN_VERSION}/SHA256SUMS
 RUN wget https://bitcoincore.org/bin/bitcoin-core-${BITCOIN_VERSION}/SHA256SUMS.asc
@@ -131,7 +131,7 @@ RUN apk --no-cache add \
 
 ENV BITCOIN_DATA=/home/bitcoin/.bitcoin
 ENV BITCOIN_VERSION=22.0
-ENV BITCOIN_PREFIX=/opt/bitcoin-${BITCOIN_VERSION}
+ENV BITCOIN_PREFIX=/opt/bitcoin/
 ENV PATH=${BITCOIN_PREFIX}/bin:$PATH
 
 COPY --from=bitcoin-core /opt /opt
