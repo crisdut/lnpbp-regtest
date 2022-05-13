@@ -1,0 +1,35 @@
+version: "2.4"
+
+networks:
+  srnet:
+    driver: bridge
+
+volumes:
+  cln_data:
+  cln_shared:
+
+services:
+  cln1:
+    build:
+      context: ./clightning/ 
+    container_name: cln1
+    restart: unless-stopped
+    command: [
+      "--alias=${CLN_HOST_1}",
+      "--network=regtest",
+      "--large-channels",
+      "--addr=0.0.0.0:${CLN_PORT}",
+      "--bitcoin-cli=/bitcoin/bitcoin-cli",
+      "--bitcoin-datadir=/bitcoin",
+      "--bitcoin-rpcconnect=${BITCOIN_HOST_1}",
+      "--bitcoin-rpcport=${BITCOIN_RPC_PORT}",
+      "--bitcoin-rpcuser=${BITCOIN_RPC_USER}",
+      "--bitcoin-rpcpassword=${BITCOIN_RPC_PASSWORD}"
+    ]
+    networks:
+      srnet:
+        aliases:
+          - ${CLN_HOST_1}
+    volumes:
+      - cln_data:/home/clightning/.lightning
+      - cln_shared:/elements

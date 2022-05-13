@@ -1,6 +1,4 @@
 FROM rust:1.59.0-slim-buster as builder
-ARG SOURCE_URL=https:\/\/github.com\/RGB-WG\/rgb-node\/archive\/refs\/tags\/v0.4.0.tar.gz
-ARG RELEASE_NAME=v0.4.0.tar.gz
 ARG SRC_DIR=/usr/local/src/rgb
 ARG BUILDER_DIR=/srv/rgb
 
@@ -11,14 +9,12 @@ RUN apt-get update \
 
 WORKDIR $SRC_DIR
 
-RUN wget "${SOURCE_URL}"
-RUN tar -xzf *.tar.gz
-RUN rm "${RELEASE_NAME}"
-
-WORKDIR "$SRC_DIR/rgb-node-0.4.0/"
+WORKDIR "$SRC_DIR/rgb-node/"
 
 RUN mkdir -p ${BUILDER_DIR}
-RUN cargo install --path . --root "${BUILDER_DIR}" --locked --all-features
+# RUN cargo install --path . --root "${BUILDER_DIR}" --locked --all-features
+RUN cargo install rgb_node --version "=0.4.2" \
+        --locked --all-features --root "${BUILDER_DIR}"
 
 FROM rust:1.59.0-slim-buster as runtime
 
@@ -45,7 +41,7 @@ COPY --from=builder --chown=${USER}:${USER} \
 WORKDIR "${BIN_DIR}"
 USER ${USER}
 
-COPY ./data/*.psbt ./
+# COPY ./data/*.psbt ./
 
 VOLUME "$DATA_DIR"
 
