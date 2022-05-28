@@ -17,9 +17,7 @@
 
 ```bash
 # Build Docker Images
-docker build . -t sr-rgb:0.1.0
-docker build . -t sr-btc:0.1.0
-docker build . -t sr-electrs:0.1.0
+docker-compose build
 
 # Command Alias (Docker)
 alias b01="docker-compose exec node1 bitcoin-cli -chain=regtest -rpcconnect=localhost -rpcport=18889 -rpcuser=bitcoin -rpcpassword=bitcoin"

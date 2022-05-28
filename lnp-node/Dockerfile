@@ -22,11 +22,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-FROM rust:1.59.0-slim-buster as builder
-
-ARG SOURCE_URL=https:\/\/github.com\/LNP-BP\/lnp-node\/archive\/refs\/tags\/demo-3.tar.gz
-ARG RELEASE_NAME=demo-3.tar.gz
-ARG SRC_DIR=/usr/local/src/lnp
+# Modified from original at https://github.com/LNP-BP/lnp-node/blob/demo-3/Dockerfile
+FROM rust:1.61.0-slim-buster as builder
+# TODO: change after new release (fix regtest)
+ARG SOURCE_CODE=https://github.com/crisdut/lnp-node.git
+ARG BUILDER_SOURCE=/opt/src/lnp
 ARG BUILDER_DIR=/srv/lnp
 
 RUN apt-get update -y \
@@ -37,20 +37,17 @@ RUN apt-get update -y \
         libsqlite3-dev \
         libssl-dev \
         libzmq3-dev \
-        pkg-config
+        pkg-config \
+        git
 
-WORKDIR "${SRC_DIR}"
+WORKDIR $BUILDER_DIR
+WORKDIR $BUILDER_SOURCE
 
-RUN wget "${SOURCE_URL}"
-RUN tar -xzf *.tar.gz
-RUN rm "${RELEASE_NAME}"
+RUN git clone $SOURCE_CODE $BUILDER_SOURCE
+RUN cargo install \
+        --locked --all-features --path . --root ${BUILDER_DIR}
 
-WORKDIR "$SRC_DIR/lnp-node-demo-3/"
-
-RUN mkdir -p ${BUILDER_DIR}
-RUN cargo install --path . --root ${BUILDER_DIR} --locked --all-features
-
-FROM rust:1.59.0-slim-buster as runtime
+FROM rust:1.61.0-slim-buster as runtime
 
 ARG BUILDER_DIR=/srv/lnp
 ARG BIN_DIR=/usr/local/bin
@@ -72,7 +69,7 @@ COPY --from=builder --chown=${USER}:${USER} \
 WORKDIR "${BIN_DIR}"
 USER ${USER}
 
-VOLUME "$DATA_DIR"
+VOLUME ${DATA_DIR}
 
 EXPOSE 9735 62962
 

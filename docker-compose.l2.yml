@@ -1,32 +1,51 @@
 version: "2.4"
-networks:
-  srnet:
-    driver: bridge
-
 services:
-  cln1:
+  lnp1:
+    container_name: lnp1
     build:
-      context: ./clightning/ 
-    container_name: cln1
+      context: ./lnp-node/
     restart: unless-stopped
-    command: [
-      "--alias=${CLN_HOST_1}",
-      "--network=regtest",
-      "--large-channels",
-      "--addr=0.0.0.0:${CLN_PORT}",
-      "--bitcoin-cli=/bitcoin/bitcoin-cli",
-      "--bitcoin-datadir=/bitcoin",
-      "--bitcoin-rpcconnect=${BITCOIN_HOST_1}",
-      "--bitcoin-rpcport=${BITCOIN_RPC_PORT}",
-      "--bitcoin-rpcuser=${BITCOIN_RPC_USER}",
-      "--bitcoin-rpcpassword=${BITCOIN_RPC_PASSWORD}"
-    ]
+    command:
+      [
+        "-vvvv",
+        "--chain=regtest",
+        "--port=${LNP_RPC_PORT}",
+        "--electrum-port=${ELECTRS_PORT}",
+        "--electrum-server=${ELECTRS_HOST}",
+        "--data-dir=/var/lib/lnp/.lnp-node",
+      ]
     depends_on:
-      - node1    
+      - electrs
+    volumes:
+      - lnp_data:/var/lib/lnp/.lnp_node
     networks:
       srnet:
         aliases:
-          - ${CLN_HOST_1}
-    volumes:
-      - cln_data:/home/clightning/.lightning
-      - bitcoin_shared:/bitcoin      
+          - ${LNP_HOST_1}
+
+  # cln1:
+  #   build:
+  #     context: ./clightning/
+  #   container_name: cln1
+  #   restart: unless-stopped
+  #   command:
+  #     [
+  #       "--alias=${CLN_HOST_1}",
+  #       "--network=regtest",
+  #       "--large-channels",
+  #       "--addr=0.0.0.0:${CLN_PORT}",
+  #       "--bitcoin-cli=/usr/bin/bitcoin-cli",
+  #       # "--bitcoin-datadir=/data-${BITCOIN_VERSION}",
+  #       "--bitcoin-rpcconnect=${BITCOIN_HOST_1}",
+  #       "--bitcoin-rpcport=${BITCOIN_RPC_PORT}",
+  #       "--bitcoin-rpcuser=${BITCOIN_RPC_USER}",
+  #       "--bitcoin-rpcpassword=${BITCOIN_RPC_PASSWORD}",
+  #     ]
+  #   depends_on:
+  #     - node1
+  #   networks:
+  #     srnet:
+  #       aliases:
+  #         - ${CLN_HOST_1}
+  #   volumes:
+  #     - cln_data:/root/.lightning

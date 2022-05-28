@@ -1,5 +1,4 @@
-FROM rust:1.59.0-slim-buster as builder
-ARG SRC_DIR=/usr/local/src/rgb
+FROM rust:1.61.0-slim-buster as builder
 ARG BUILDER_DIR=/srv/rgb
 
 RUN apt-get update \
@@ -7,16 +6,11 @@ RUN apt-get update \
         wget build-essential cmake git pkg-config \
         libpq-dev libssl-dev libzmq3-dev libsqlite3-dev
 
-WORKDIR $SRC_DIR
-
-WORKDIR "$SRC_DIR/rgb-node/"
-
-RUN mkdir -p ${BUILDER_DIR}
-# RUN cargo install --path . --root "${BUILDER_DIR}" --locked --all-features
-RUN cargo install rgb_node --version "=0.4.2" \
+WORKDIR $BUILDER_DIR
+RUN cargo install rgb_node --version "=0.7.0" \
         --locked --all-features --root "${BUILDER_DIR}"
 
-FROM rust:1.59.0-slim-buster as runtime
+FROM rust:1.61.0-slim-buster as runtime
 
 ARG BUILDER_DIR=/srv/rgb
 ARG BIN_DIR=/usr/local/bin
