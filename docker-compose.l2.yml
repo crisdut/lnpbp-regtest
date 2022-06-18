@@ -9,10 +9,8 @@ services:
       [
         "-vvvv",
         "--chain=regtest",
-        "--port=${LNP_RPC_PORT}",
         "--electrum-port=${ELECTRS_PORT}",
-        "--electrum-server=${ELECTRS_HOST}",
-        "--data-dir=/var/lib/lnp/.lnp-node",
+        "--electrum-server=${ELECTRS_HOST}"
       ]
     depends_on:
       - electrs
@@ -22,6 +20,27 @@ services:
       srnet:
         aliases:
           - ${LNP_HOST_1}
+
+  lnp2:
+    container_name: lnp2
+    build:
+      context: ./lnp-node/
+    restart: unless-stopped
+    command:
+      [
+        "-vvvv",
+        "--chain=regtest",
+        "--electrum-port=${ELECTRS_PORT}",
+        "--electrum-server=${ELECTRS_HOST}",
+      ]
+    depends_on:
+      - electrs
+    volumes:
+      - lnp_data:/var/lib/lnp/.lnp_node
+    networks:
+      srnet:
+        aliases:
+          - ${LNP_HOST_2}
 
   # cln1:
   #   build:

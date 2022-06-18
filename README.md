@@ -27,6 +27,12 @@ alias rgb02="docker-compose exec rgb2 rgb-cli --network=regtest --data-dir=/var/
 alias rgbd1="docker-compose run --rm rgb1 --network=regtest --bin-dir=/usr/local/bin/ --data-dir=/var/lib/rgb/ --electrum=electrs:50001"
 alias rgbd2="docker-compose run --rm rgb2 --network=regtest --bin-dir=/usr/local/bin/ --data-dir=/var/lib/rgb/ --electrum=electrs:50001"
 
+alias lnp01="docker-compose exec lnp1 lnp-cli -vvvv"
+alias lnpd1="docker-compose run lnp1 --network=regtest -vvvv"
+
+alias lnp02="docker-compose exec lnp2 lnp-cli -vvvv"
+alias lnpd2="docker-compose run lnp2 --network=regtest -vvvv"
+
 # Update rust
 rustup component add rust-src --toolchain nightly
 ```
