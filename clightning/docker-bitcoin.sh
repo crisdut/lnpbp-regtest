@@ -1,7 +1,6 @@
 BITCOIN_VERSION="22.0"
 BITCOIN_TARBALL="bitcoin-${BITCOIN_VERSION}-${aarch64:-`uname -m`}-linux-gnu.tar.gz"
 BITCOIN_URL="https://bitcoincore.org/bin/bitcoin-core-$BITCOIN_VERSION/$BITCOIN_TARBALL"
-
 BITCOIN_ASC_URL="https://bitcoincore.org/bin/bitcoin-core-$BITCOIN_VERSION/SHA256SUMS.asc"
 
 echo "Extract and verify"
