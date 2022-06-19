@@ -33,6 +33,8 @@ alias lnpd1="docker-compose run lnp1 --network=regtest -vvvv"
 alias lnp02="docker-compose exec lnp2 lnp-cli -vvvv"
 alias lnpd2="docker-compose run lnp2 --network=regtest -vvvv"
 
+alias cln01="docker-compose exec cln1 lightning-cli --network=regtest"
+
 # Update rust
 rustup component add rust-src --toolchain nightly
 ```

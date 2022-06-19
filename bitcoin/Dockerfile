@@ -74,7 +74,6 @@ RUN apk --no-cache add \
 COPY --from=builder /opt/bitcoin /opt/bitcoin
 COPY docker-entrypoint.sh /entrypoint.sh
 
-# USER ${USER}
 VOLUME ["/home/bitcoin/.bitcoin"]
 RUN bitcoind -version | grep "Bitcoin Core version v${BITCOIN_VERSION}"
 

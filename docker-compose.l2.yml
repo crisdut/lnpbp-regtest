@@ -42,29 +42,30 @@ services:
         aliases:
           - ${LNP_HOST_2}
 
-  # cln1:
-  #   build:
-  #     context: ./clightning/
-  #   container_name: cln1
-  #   restart: unless-stopped
-  #   command:
-  #     [
-  #       "--alias=${CLN_HOST_1}",
-  #       "--network=regtest",
-  #       "--large-channels",
-  #       "--addr=0.0.0.0:${CLN_PORT}",
-  #       "--bitcoin-cli=/usr/bin/bitcoin-cli",
-  #       # "--bitcoin-datadir=/data-${BITCOIN_VERSION}",
-  #       "--bitcoin-rpcconnect=${BITCOIN_HOST_1}",
-  #       "--bitcoin-rpcport=${BITCOIN_RPC_PORT}",
-  #       "--bitcoin-rpcuser=${BITCOIN_RPC_USER}",
-  #       "--bitcoin-rpcpassword=${BITCOIN_RPC_PASSWORD}",
-  #     ]
-  #   depends_on:
-  #     - node1
-  #   networks:
-  #     srnet:
-  #       aliases:
-  #         - ${CLN_HOST_1}
-  #   volumes:
-  #     - cln_data:/root/.lightning
+  cln1:
+    build:
+      context: ./clightning/
+    container_name: cln1
+    restart: unless-stopped
+    # entrypoint: bash
+    command:
+      [
+        "--alias=${CLN_HOST_1}",
+        "--network=regtest",
+        "--large-channels",
+        "--addr=0.0.0.0:${CLN_PORT}",
+        "--bitcoin-cli=/opt/bitcoin/bin/bitcoin-cli",
+        # "--bitcoin-datadir=/data-${BITCOIN_VERSION}",
+        "--bitcoin-rpcconnect=${BITCOIN_HOST_1}",
+        "--bitcoin-rpcport=${BITCOIN_RPC_PORT}",
+        "--bitcoin-rpcuser=${BITCOIN_RPC_USER}",
+        "--bitcoin-rpcpassword=${BITCOIN_RPC_PASSWORD}",
+      ]
+    depends_on:
+      - node1
+    networks:
+      srnet:
+        aliases:
+          - ${CLN_HOST_1}
+    volumes:
+      - cln_data:/root/.lightning
