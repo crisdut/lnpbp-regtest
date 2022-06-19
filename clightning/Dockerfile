@@ -1,89 +1,161 @@
-FROM alpine:3.12 as builder
+FROM debian:buster-slim as bitcoin-builder
 
-RUN sed -i 's/http\:\/\/dl-cdn.alpinelinux.org/https\:\/\/alpine.global.ssl.fastly.net/g' /etc/apk/repositories
-RUN apk --no-cache add autoconf \
-  automake \
-  boost-dev \
-  build-base \
-  chrpath \
-  file \
-  gnupg \
-  libevent-dev \
-  libressl \
-  libressl-dev \
-  libtool \
-  linux-headers \
-  protobuf-dev \
-  zeromq-dev \
-  python3-dev \
-  py3-mako \
-  py3-pip \
-  py3-setuptools \
-  git \
-  gmp-dev \
-  sqlite-dev \
-  gettext
+ARG SOURCE_CODE=https://github.com/crisdut/bitcoin.git
+ARG BUILDER_SOURCE=/opt/src
+ARG BUILDER_DIR=/opt/bitcoin
+ARG BITCOIN_VERSION=v22.0
 
-RUN ln -s /usr/bin/python3 /usr/bin/python
-RUN pip3 install mrkd
+RUN apt-get update -qq && \
+    apt-get install -qq -y --no-install-recommends \
+        build-essential \
+        ca-certificates \
+        autoconf \
+        automake \
+        chrpath \
+        file \
+        dirmngr \
+        gettext \
+        gnupg \
+        pkg-config \
+        libevent-dev \
+        libpq-dev \
+        libtool \
+        libffi-dev \        
+        libsqlite3-dev \
+        libboost-dev \
+        libboost-chrono-dev libboost-filesystem-dev libboost-program-options-dev libboost-system-dev \
+        libboost-test-dev libboost-thread-dev \
+        git wget net-tools
 
-RUN set -ex \
-  && for key in \
-    BFF0F67810C1EED1 \
-  ; do \
-    gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$key" || \
-    gpg --batch --keyserver pgp.mit.edu --recv-keys "$key" || \
-    gpg --batch --keyserver keyserver.pgp.com --recv-keys "$key" || \
-    gpg --batch --keyserver ha.pool.sks-keyservers.net --recv-keys "$key" || \
-    gpg --batch --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$key" ; \
-  done
+WORKDIR $BUILDER_DIR
+WORKDIR $BUILDER_SOURCE
+RUN git clone $SOURCE_CODE
 
-ARG CLN_VERSION
-ENV CLIGHTNING_PREFIX=/opt/clightning
+WORKDIR $BUILDER_SOURCE/bitcoin
+RUN git checkout $BITCOIN_VERSION
 
-RUN wget "https://github.com/ElementsProject/lightning/releases/download/v0.10.1/SHA256SUMS"
-RUN wget "https://github.com/ElementsProject/lightning/releases/download/v0.10.1/SHA256SUMS.asc"
-RUN wget "https://github.com/ElementsProject/lightning/releases/download/v0.10.1/clightning-v0.10.1.zip"
-# @todo get the correct source bundle checksum from somewhere
-# RUN gpg --verify SHA256SUMS.asc
-# RUN grep " release/clightning-v0.10.1.zip\$" SHA256SUMS | sed 's/ release\///g' | sha256sum -c -
-RUN unzip -q clightning-v0.10.1.zip
+RUN ./autogen.sh
+RUN ./configure \
+    LDFLAGS=-L`ls -d /opt/db*`/lib/ CPPFLAGS=-I`ls -d /opt/db*`/include/ \
+    # Enable Fuzz tests
+    # CC=clang CXX=clang++ \
+    # --enable-c++17 --enable-fuzz --with-sanitizers=address,fuzzer,undefined \
+    --prefix=${BUILDER_DIR} \
+    --mandir=/usr/share/man \
+    --disable-tests \
+    --disable-bench \
+    --disable-ccache \
+    --with-gui=no \
+    --with-utils \
+    --with-libs \
+    --with-daemon \
+    --with-sqlite \
+    --without-bdb
 
-WORKDIR /clightning-v0.10.1
-
-RUN ./configure --prefix=${CLIGHTNING_PREFIX}
-RUN make -j$(nproc)
+RUN make -j "$(($(nproc)+1))"
 RUN make install
-RUN strip ${CLIGHTNING_PREFIX}/bin/lightning-cli
-RUN strip ${CLIGHTNING_PREFIX}/bin/lightningd
 
-# Build stage for compiled artifacts
-FROM alpine:3.12
+FROM debian:buster-slim as lightning-builder
+ENV SOURCE_CODE=https://github.com/crisdut/lightning.git
 
-RUN adduser -S clightning
-RUN sed -i 's/http\:\/\/dl-cdn.alpinelinux.org/https\:\/\/alpine.global.ssl.fastly.net/g' /etc/apk/repositories
-RUN apk --no-cache add \
-  bash \
-  gmp \
-  boost \
-  boost-program_options \
-  libevent \
-  libressl \
-  libzmq \
-  su-exec \
-  # enable support for custom nodejs plugins
-  nodejs \
-  npm
+ENV BUILDER_SOURCE=/opt/src
+ENV BUILDER_DIR=/opt/lightning
 
-ENV CLIGHTNING_DATA=/home/clightning/.lightning
-ENV CLIGHTNING_PREFIX=/opt/clightning
-ENV PATH=${CLIGHTNING_PREFIX}/bin:$PATH
+ENV DEVELOPER=0
+ENV PYTHON_VERSION=3
+ENV LIGHTNING_VERSION=v0.11.1
 
-COPY --from=builder /opt /opt
-COPY docker-entrypoint.sh /entrypoint.sh
-COPY ./clightning.conf /home/clightning/.lightning/lightning.conf
-RUN ["chmod", "+x", "/entrypoint.sh"]
+RUN apt-get update -qq && \
+    apt-get install -qq -y --no-install-recommends \
+        autoconf \
+        automake \
+        build-essential \
+        ca-certificates \
+        curl \
+        dirmngr \
+        gettext \
+        git \
+        gnupg \
+        libpq-dev \
+        libtool \
+        libffi-dev \
+        python3 \
+        python3-dev \
+        python3-mako \
+        python3-pip \
+        python3-venv \
+        python3-setuptools \
+        wget
 
-ENTRYPOINT ["/entrypoint.sh"]
+RUN wget -q https://zlib.net/zlib-1.2.12.tar.gz \
+&& tar xvf zlib-1.2.12.tar.gz \
+&& cd zlib-1.2.12 \
+&& ./configure \
+&& make \
+&& make install && cd .. && rm zlib-1.2.12.tar.gz && rm -rf zlib-1.2.12
 
+RUN apt-get install -y --no-install-recommends unzip tclsh \
+&& wget -q https://www.sqlite.org/2019/sqlite-src-3290000.zip \
+&& unzip sqlite-src-3290000.zip \
+&& cd sqlite-src-3290000 \
+&& ./configure --enable-static --disable-readline --disable-threadsafe --disable-load-extension \
+&& make \
+&& make install && cd .. && rm sqlite-src-3290000.zip && rm -rf sqlite-src-3290000
+
+RUN wget -q https://gmplib.org/download/gmp/gmp-6.1.2.tar.xz \
+&& tar xvf gmp-6.1.2.tar.xz \
+&& cd gmp-6.1.2 \
+&& ./configure --disable-assembly \
+&& make \
+&& make install && cd .. && rm gmp-6.1.2.tar.xz && rm -rf gmp-6.1.2
+
+WORKDIR $BUILDER_DIR
+WORKDIR $BUILDER_SOURCE
+RUN git clone $SOURCE_CODE
+
+WORKDIR $BUILDER_SOURCE/lightning
+RUN git checkout $LIGHTNING_VERSION
+RUN git submodule update --init --recursive
+
+RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python3 - \
+    && pip3 install -U pip \
+    && pip3 install -U wheel \
+    && /root/.local/bin/poetry config virtualenvs.create false \
+    && /root/.local/bin/poetry install
+
+RUN ./configure --prefix=${BUILDER_DIR} --enable-static 
+RUN make -j "$(($(nproc)+1))" DEVELOPER=${DEVELOPER}
+RUN make install
+
+# Runtime
+FROM debian:buster-slim as runtime
+ENV BITCOIN_PREFIX=/opt/bitcoin
+ENV LIGHTNING_PREFIX=/opt/lightning
+ENV PATH=${BITCOIN_PREFIX}/bin:${LIGHTNING_PREFIX}/bin:$PATH
+ENV USER=lightning
+
+ENV LIGHTNINGD_DATA=/home/lightning/.lightning
+ENV LIGHTNINGD_NETWORK=bitcoin
+ENV LIGHTNINGD_RPC_PORT=9835
+ENV LIGHTNINGD_PORT=9735
+
+RUN adduser ${USER}
+
+RUN apt-get update &&\
+    apt-get install -y --no-install-recommends \
+    socat inotify-tools python3 python3-pip libpq5 \
+    libboost-filesystem-dev libevent-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# USER ${USER}
+VOLUME ["/home/lightning/.lightning"]
+
+WORKDIR "/home/lightning/"
+COPY --from=bitcoin-builder --chown=${USER}:${USER} ${BITCOIN_PREFIX} ${BITCOIN_PREFIX}
+COPY --from=lightning-builder --chown=${USER}:${USER} ${LIGHTNING_PREFIX} ${LIGHTNING_PREFIX}
+COPY docker-entrypoint.sh entrypoint.sh
+
+EXPOSE 9735 9736 9835 9836 19735 19736 19835 19836
+
+ENTRYPOINT ["./entrypoint.sh"]
 CMD ["lightningd"]

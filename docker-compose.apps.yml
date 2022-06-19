@@ -8,7 +8,6 @@ services:
     command:
       [
         "electrs",
-        "-vvvv",
         "--timestamp",
         "--network=regtest",
         "--db-dir=/home/electrs/db",

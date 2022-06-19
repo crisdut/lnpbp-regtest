@@ -1,8 +1,4 @@
 version: "2.4"
-
-volumes:
-  rgb_data:
-
 services:
   rgb1:
     build:

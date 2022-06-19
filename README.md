@@ -17,9 +17,7 @@
 
 ```bash
 # Build Docker Images
-docker build . -t sr-rgb:0.1.0
-docker build . -t sr-btc:0.1.0
-docker build . -t sr-electrs:0.1.0
+docker-compose build
 
 # Command Alias (Docker)
 alias b01="docker-compose exec node1 bitcoin-cli -chain=regtest -rpcconnect=localhost -rpcport=18889 -rpcuser=bitcoin -rpcpassword=bitcoin"
@@ -28,6 +26,14 @@ alias rgb02="docker-compose exec rgb2 rgb-cli --network=regtest --data-dir=/var/
 
 alias rgbd1="docker-compose run --rm rgb1 --network=regtest --bin-dir=/usr/local/bin/ --data-dir=/var/lib/rgb/ --electrum=electrs:50001"
 alias rgbd2="docker-compose run --rm rgb2 --network=regtest --bin-dir=/usr/local/bin/ --data-dir=/var/lib/rgb/ --electrum=electrs:50001"
+
+alias lnp01="docker-compose exec lnp1 lnp-cli -vvvv"
+alias lnpd1="docker-compose run lnp1 --network=regtest -vvvv"
+
+alias lnp02="docker-compose exec lnp2 lnp-cli -vvvv"
+alias lnpd2="docker-compose run lnp2 --network=regtest -vvvv"
+
+alias cln01="docker-compose exec cln1 lightning-cli --network=regtest"
 
 # Update rust
 rustup component add rust-src --toolchain nightly

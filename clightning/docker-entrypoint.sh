@@ -1,26 +1,21 @@
-#!/bin/sh
-set -e
+#!/usr/bin/env bash
 
-if [ $(echo "$1" | cut -c1) = "-" ]; then
-  echo "$0: assuming arguments for lightningd"
+: "${EXPOSE_TCP:=false}"
 
-  set -- lightningd "$@"
+networkdatadir="${LIGHTNINGD_DATA}/${LIGHTNINGD_NETWORK}"
+
+if [ "$EXPOSE_TCP" == "true" ]; then
+    set -m
+    lightningd "$@" &
+
+    echo "Core-Lightning starting"
+    while read -r i; do if [ "$i" = "lightning-rpc" ]; then break; fi; done \
+    < <(inotifywait -e create,open --format '%f' --quiet "${networkdatadir}" --monitor)
+    echo "Core-Lightning started"
+    echo "Core-Lightning started, RPC available on port $LIGHTNINGD_RPC_PORT"
+
+    socat "TCP4-listen:$LIGHTNINGD_RPC_PORT,fork,reuseaddr" "UNIX-CONNECT:${networkdatadir}/lightning-rpc" &
+    fg %-
+else
+    exec lightningd --network="${LIGHTNINGD_NETWORK}" "$@"
 fi
-
-if [ $(echo "$1" | cut -c1) = "-" ] || [ "$1" = "lightningd" ]; then
-  mkdir -p "$CLIGHTNING_DATA"
-  chmod 700 "$CLIGHTNING_DATA"
-  chown -R clightning "$CLIGHTNING_DATA"
-
-  echo "$0: setting data directory to $CLIGHTNING_DATA"
-
-  set -- "$@" --lightning-dir="$CLIGHTNING_DATA"
-fi
-
-if [ "$1" = "lightningd" ] || [ "$1" = "lightning-cli" ]; then
-  echo
-  exec su-exec clightning "$@"
-fi
-
-echo
-exec "$@"
