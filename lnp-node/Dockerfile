@@ -4,6 +4,7 @@ FROM rust:1.61.0-slim-buster as builder
 ARG SOURCE_CODE=https://github.com/crisdut/lnp-node.git
 ARG BUILDER_SOURCE=/opt/src/lnp
 ARG BUILDER_DIR=/srv/lnp
+ARG VERSION=a27e1a
 
 RUN apt-get update -y \
     && apt-get install -y \
@@ -19,6 +20,7 @@ RUN apt-get update -y \
 WORKDIR $BUILDER_DIR
 WORKDIR $BUILDER_SOURCE
 RUN git clone $SOURCE_CODE $BUILDER_SOURCE
+RUN git checkout $VERSION
 RUN cargo install --locked --all-features --path . --root ${BUILDER_DIR}
 
 # Runtime
