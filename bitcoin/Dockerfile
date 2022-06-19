@@ -54,10 +54,10 @@ RUN make install
 
 # Runtime
 FROM alpine:3.14 as runtime
-ARG BITCOIN_PREFIX=/opt/bitcoin
-ARG PATH=${BITCOIN_PREFIX}/bin:$PATH
-ARG BITCOIN_DATA=/home/bitcoin/.bitcoin
-ARG USER=bitcoin
+ENV BITCOIN_PREFIX=/opt/bitcoin
+ENV PATH=${BITCOIN_PREFIX}/bin:$PATH
+ENV BITCOIN_DATA=/home/bitcoin/.bitcoin
+ENV USER=bitcoin
 
 RUN adduser -S ${USER}
 RUN sed -i 's/http\:\/\/dl-cdn.alpinelinux.org/https\:\/\/alpine.global.ssl.fastly.net/g' /etc/apk/repositories
@@ -67,14 +67,14 @@ RUN apk --no-cache add \
   boost-thread \
   libevent \
   libzmq \
+  bash \
   su-exec \
-  sqlite-dev
+  sqlite-dev &&  rm -rf /var/cache/apk/*
 
-COPY --from=builder /opt /opt
+COPY --from=builder /opt/bitcoin /opt/bitcoin
 COPY docker-entrypoint.sh /entrypoint.sh
 
-
-USER ${USER}
+# USER ${USER}
 VOLUME ["/home/bitcoin/.bitcoin"]
 RUN bitcoind -version | grep "Bitcoin Core version v${BITCOIN_VERSION}"
 
