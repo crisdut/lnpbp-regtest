@@ -3,7 +3,7 @@ FROM debian:buster-slim as bitcoin-builder
 ARG SOURCE_CODE=https://github.com/crisdut/bitcoin.git
 ARG BUILDER_SOURCE=/opt/src
 ARG BUILDER_DIR=/opt/bitcoin
-ARG BITCOIN_VERSION=v22.0
+ARG BITCOIN_VERSION=v22.0-alt
 
 RUN apt-get update -qq && \
     apt-get install -qq -y --no-install-recommends \
@@ -63,7 +63,7 @@ ENV BUILDER_DIR=/opt/lightning
 
 ENV DEVELOPER=0
 ENV PYTHON_VERSION=3
-ENV LIGHTNING_VERSION=v0.11.1
+ENV LIGHTNING_VERSION=v0.11.1-alt
 
 RUN apt-get update -qq && \
     apt-get install -qq -y --no-install-recommends \
