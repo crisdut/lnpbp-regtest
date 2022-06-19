@@ -16,7 +16,7 @@ services:
     depends_on:
       - electrs
     volumes:
-      - rgb_data:/var/lib/rgb
+      - rgb1_data:/var/lib/rgb
     networks:
       srnet:
         aliases:
@@ -38,7 +38,7 @@ services:
     depends_on:
       - electrs
     volumes:
-      - rgb_data:/var/lib/rgb
+      - rgb2_data:/var/lib/rgb
     networks:
       srnet:
         aliases:
