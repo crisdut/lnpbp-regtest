@@ -21,33 +21,11 @@ services:
         aliases:
           - ${LNP_HOST_1}
 
-  lnp2:
-    container_name: lnp2
-    build:
-      context: ./lnp-node/
-    restart: unless-stopped
-    command:
-      [
-        "-vvvv",
-        "--chain=regtest",
-        "--electrum-port=${ELECTRS_PORT}",
-        "--electrum-server=${ELECTRS_HOST}",
-      ]
-    depends_on:
-      - electrs
-    volumes:
-      - lnp_data:/var/lib/lnp/.lnp_node
-    networks:
-      srnet:
-        aliases:
-          - ${LNP_HOST_2}
-
   cln1:
     build:
       context: ./clightning/
     container_name: cln1
     restart: unless-stopped
-    # entrypoint: bash
     command:
       [
         "--alias=${CLN_HOST_1}",
@@ -55,7 +33,6 @@ services:
         "--large-channels",
         "--addr=0.0.0.0:${CLN_PORT}",
         "--bitcoin-cli=/opt/bitcoin/bin/bitcoin-cli",
-        # "--bitcoin-datadir=/data-${BITCOIN_VERSION}",
         "--bitcoin-rpcconnect=${BITCOIN_HOST_1}",
         "--bitcoin-rpcport=${BITCOIN_RPC_PORT}",
         "--bitcoin-rpcuser=${BITCOIN_RPC_USER}",
