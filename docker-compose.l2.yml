@@ -17,7 +17,7 @@ services:
     volumes:
       - lnp1_data:/var/lib/lnp/.lnp_node
     networks:
-      srnet:
+      nodes_network:
         aliases:
           - ${LNP_HOST_1}
 
@@ -38,7 +38,7 @@ services:
     volumes:
       - lnp2_data:/var/lib/lnp/.lnp_node
     networks:
-      srnet:
+      nodes_network:
         aliases:
           - ${LNP_HOST_2}
 
@@ -62,7 +62,7 @@ services:
     depends_on:
       - node1
     networks:
-      srnet:
+      nodes_network:
         aliases:
           - ${CLN_HOST_1}
     volumes:

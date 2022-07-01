@@ -1,8 +1,12 @@
 version: "3"
 
 networks:
-  srnet:
+  nodes_network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+          gateway: 172.20.0.1    
 
 volumes:
   node1_data:
@@ -11,7 +15,8 @@ volumes:
   lnp1_data:
   lnp2_data:  
   rgb1_data:
-  rgb2_data:  
+  rgb2_data:
+  store1_data:    
 
 services:
   node1:
@@ -43,7 +48,7 @@ services:
     volumes:
       - node1_data:/home/bitcoin/.bitcoin
     networks:
-      srnet:
+      nodes_network:
         aliases:
           - ${BITCOIN_HOST_1}
 
@@ -76,6 +81,6 @@ services:
     volumes:
       - node1_data:/home/bitcoin/.bitcoin
     networks:
-      srnet:
+      nodes_network:
         aliases:
           - ${BITCOIN_HOST_2}

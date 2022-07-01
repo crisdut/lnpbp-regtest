@@ -2,44 +2,37 @@ version: "2.4"
 services:
   rgb1:
     build:
-      context: ./rgb-node/  
+      context: ./rgb-node/
     container_name: rgb1
     restart: unless-stopped
+    # entrypoint: bash
     command:
       [
         "-vvvv",
         "--network=regtest",
-        "--bin-dir=${RGB_BIN_DIR}",
         "--data-dir=${RGB_DATA_DIR}",
-        "--electrum=${ELECTRS_HOST}:${ELECTRS_PORT}",
+        "--electrum-server=${ELECTRS_HOST}",
+        "--electrum-port=${ELECTRS_PORT}",
+        "--store=172.20.0.4:${STORE_RPC_PORT}"
       ]
     depends_on:
       - electrs
-    volumes:
+      - store1
+    volumes:    
       - rgb1_data:/var/lib/rgb
+      - store1_data:/var/lib/store      
     networks:
-      srnet:
+      nodes_network:
         aliases:
           - ${RGB_HOST_1}
 
-  rgb2:
+  store1:
     build:
-      context: ./rgb-node/
-    container_name: rgb2
+      context: ./store-node/
+    container_name: store1
     restart: unless-stopped
-    command:
-      [
-        "-vvvv",
-        "--network=regtest",
-        "--bin-dir=${RGB_BIN_DIR}",
-        "--data-dir=${RGB_DATA_DIR}",
-        "--electrum=${ELECTRS_HOST}:${ELECTRS_PORT}",
-      ]
-    depends_on:
-      - electrs
     volumes:
-      - rgb2_data:/var/lib/rgb
+      - store1_data:/var/lib/store
     networks:
-      srnet:
-        aliases:
-          - ${RGB_HOST_2}
+      nodes_network:
+        ipv4_address: 172.20.0.4

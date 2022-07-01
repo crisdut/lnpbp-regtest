@@ -3,7 +3,7 @@ services:
   electrs:
     build:
       context: ./electrs/  
-    container_name: ${COMPOSE_PROJECT_NAME}_electrs
+    container_name: electrs
     restart: unless-stopped
     command:
       [
@@ -15,11 +15,9 @@ services:
         "--daemon-p2p-addr=node1:${BITCOIN_PORT}",
         "--daemon-rpc-addr=node1:${BITCOIN_RPC_PORT}"
       ]
-    # ports:
-    #   - "127.0.0.1:${ELECTRS_PORT}:${ELECTRS_PORT}"
     depends_on:
       - node1
     networks:
-      srnet:
+      nodes_network:
         aliases:
           - ${ELECTRS_HOST}
