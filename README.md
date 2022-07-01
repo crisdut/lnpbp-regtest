@@ -21,17 +21,22 @@ docker-compose build
 
 # Command Alias (Docker)
 alias b01="docker-compose exec node1 bitcoin-cli -chain=regtest -rpcconnect=localhost -rpcport=18889 -rpcuser=bitcoin -rpcpassword=bitcoin"
-alias rgb01="docker-compose exec rgb1 rgb-cli --network=regtest --data-dir=/var/lib/rgb/"
-alias rgb02="docker-compose exec rgb2 rgb-cli --network=regtest --data-dir=/var/lib/rgb/"
+alias b02="docker-compose exec node2 bitcoin-cli -chain=regtest -rpcconnect=localhost -rpcport=18889 -rpcuser=bitcoin -rpcpassword=bitcoin"
 
-alias rgbd1="docker-compose run --rm rgb1 --network=regtest --bin-dir=/usr/local/bin/ --data-dir=/var/lib/rgb/ --electrum=electrs:50001"
-alias rgbd2="docker-compose run --rm rgb2 --network=regtest --bin-dir=/usr/local/bin/ --data-dir=/var/lib/rgb/ --electrum=electrs:50001"
+alias rgbd1="docker-compose run --rm rgb1 -vvvv --network=regtest --bin-dir=/usr/local/bin/ --data-dir=/var/lib/rgb/ --electrum=electrs:50001"
+alias rgbd2="docker-compose run --rm rgb2 -vvvv --network=regtest --bin-dir=/usr/local/bin/ --data-dir=/var/lib/rgb/ --electrum=electrs:50001"
+
+alias lnpd1="docker-compose run --rm lnp1 --network=regtest -vvvv --data-dir=/var/lib/lnp/"
+alias lnpd2="docker-compose run --rm lnp2 --network=regtest -vvvv --data-dir=/var/lib/lnp/"
+
+alias rgb01="docker-compose exec rgb1 rgb-cli -vvvv --network=regtest --data-dir=/var/lib/rgb/"
+alias rgb02="docker-compose exec rgb2 rgb-cli -vvvv --network=regtest --data-dir=/var/lib/rgb/"
+
+alias fungible1="docker-compose exec rgb1 rgb20 -vvvv --network=regtest"
+alias fungible2="docker-compose exec rgb2 rgb20 -vvvv --network=regtest"
 
 alias lnp01="docker-compose exec lnp1 lnp-cli -vvvv"
-alias lnpd1="docker-compose run lnp1 --network=regtest -vvvv"
-
 alias lnp02="docker-compose exec lnp2 lnp-cli -vvvv"
-alias lnpd2="docker-compose run lnp2 --network=regtest -vvvv"
 
 alias cln01="docker-compose exec cln1 lightning-cli --network=regtest"
 
@@ -39,59 +44,41 @@ alias cln01="docker-compose exec cln1 lightning-cli --network=regtest"
 rustup component add rust-src --toolchain nightly
 ```
 
-### Generate Token
+### Start Network and Funding Wallet 
 
 ```bash
-# 0- Generate and/or Load wallets
+# 1- Generate and/or Load wallets
 b01 -named createwallet wallet_name='alpha' descriptors=true # or  b01 loadwallet alpha
-b01 -named createwallet wallet_name='beta' descriptors=true # or  b02 loadwallet beta
+b02 -named createwallet wallet_name='beta' descriptors=true # or  b02 loadwallet beta
 
-# 1- Generate two bitcoin address
+# 2- Generate two bitcoin address
 addr1="b01 -rpcwallet=alpha getnewaddress"
-addr2="b01 -rpcwallet=beta getnewaddress"
-addr3="b01 -rpcwallet=beta getnewaddress"
+addr2="b02 -rpcwallet=beta getnewaddress"
 
-# 2- Generate new blocks and transfer
-b01 generatetoaddress 500 $addr1
+# 3- Generate new blocks and transfer
 b01 -rpcwallet=alpha settxfee 0.00001
-b01 -rpcwallet=alpha sendtoaddress $addr2 2 
-b01 -rpcwallet=alpha sendtoaddress $addr3 1 
+b01 generatetoaddress 500 $addr1
 b01 -rpcwallet=beta listunspent
 
-# 3- Add TxOut Information
+b02 -rpcwallet=beta settxfee 0.00001 
+b02 generatetoaddress 500 $addr2
+
+# 4- List transaction and output unspent
 b01 -rpcwallet=alpha listtransactions
 # Example
 # $txid='1dc2dfa2988dd35116e2ac3ce17d8d87afd282ce675a9f2a3916fc5c6cbcb08c'
 # $out='0'
 
-# $change_txid='1dc2dfa2988dd35116e2ac3ce17d8d87afd282ce675a9f2a3916fc5c6cbcb08c'
-# $change_out='0'
-
-# $dest_txid='1dc2dfa2988dd35116e2ac3ce17d8d87afd282ce675a9f2a3916fc5c6cbcb08c'
-# $dest_out='0'
-
-# 4- Generate new issue
-ticker="STK01"
-name="Fungible (Sample)"
-rgb01 fungible issue $ticker $name --precision 0 1@$txid:$out
+# 5- Generate funding wallet
+lnpd1 init
 # Example
-# $contract_id=rgb1qzkpy3wrt2xyms7lhc67lrr6v93x3a7tkjxr698286qarx2n3wcslhlevj
+# $pk='tprv8ZgxMBicQKsPdYauyAQ2rzEptsCep1ZvuT1A2WTouSYoHGwAYicgR59irVbCuATyv4GffwJnHLvrtiHc7F4z1ckL6hP8KpeagH89CCoysSy'
+```
 
-# 5- Generate blind utxo
-rgb02 fungible blind $dest_txid:$dest_out
-#Example
-# $blind="utxob17cemvl28ctgnrx45shx2z7nxz3hlkspvupd6ay78laqdn9ysc2zsjkm6t8"
-# $blind_secret="8418017085025344047"
+### Create new Asset 
 
-# 6- Generate psbt source
-
-# 7- Create new transfer
-rgb01 fungible transfer $blind 1 $asset_id $psbt /var/lib/rgb/consignment.rgb /var/lib/rgb/disclosure.rgb /var/lib/rgb/invoice.rgb -a $txid:$out -i $change_txid:$change_out
-
-# 9- Accept transfer
-rgb02 fungible accept /var/lib/rgb/consignment.rgb $dest_txid:$ $blind_secret
-
-# 10- Check transfer (Updated)
-rgb01 fungible enclose /var/lib/rgb/disclosure.rgb
-
+```bash
+# 1- Generate new issue
+ticker="USDT"
+name="Tether"
 ```

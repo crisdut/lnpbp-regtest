@@ -10,7 +10,8 @@ services:
         "-vvvv",
         "--chain=regtest",
         "--electrum-port=${ELECTRS_PORT}",
-        "--electrum-server=${ELECTRS_HOST}"
+        "--electrum-server=${ELECTRS_HOST}",
+        "--data-dir=/var/lib/lnp"
       ]
     depends_on:
       - electrs
@@ -32,6 +33,7 @@ services:
         "--chain=regtest",
         "--electrum-port=${ELECTRS_PORT}",
         "--electrum-server=${ELECTRS_HOST}",
+        "--data-dir=/var/lib/lnp"
       ]
     depends_on:
       - electrs

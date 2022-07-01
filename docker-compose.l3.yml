@@ -29,7 +29,7 @@ services:
   rgb2:
     build:
       context: ./rgb-node/
-    container_name: rgb1
+    container_name: rgb2
     restart: unless-stopped
     command:
       [
