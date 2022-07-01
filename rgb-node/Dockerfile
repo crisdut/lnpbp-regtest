@@ -11,7 +11,10 @@ RUN cargo install rgb20 --version "=0.8.0-beta.2" \
         --locked --all-features --root "${BUILDER_DIR}"
 
 FROM rust:1.61.0-slim-buster as builder
+ARG SOURCE_CODE=https://github.com/crisdut/rgb-node.git
+ARG BUILDER_SOURCE=/opt/src/rgb
 ARG BUILDER_DIR=/srv/rgb
+ARG VERSION=d36e4ad
 
 RUN apt-get update \
     && apt-get -y install --no-install-recommends \
@@ -19,11 +22,12 @@ RUN apt-get update \
         libpq-dev libssl-dev libzmq3-dev libsqlite3-dev
 
 WORKDIR $BUILDER_DIR
-RUN cargo install rgb_node --version "=0.8.0-beta.2" \
-        --locked --all-features --root "${BUILDER_DIR}"
+WORKDIR $BUILDER_SOURCE
+RUN git clone $SOURCE_CODE $BUILDER_SOURCE
+RUN git checkout $VERSION
+RUN cargo install --locked --all-features --path . --root ${BUILDER_DIR}
 
 FROM rust:1.61.0-slim-buster as runtime
-
 ARG BUILDER_DIR=/srv/rgb
 ARG BIN_DIR=/usr/local/bin
 ARG DATA_DIR=/var/lib/rgb
