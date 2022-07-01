@@ -13,9 +13,9 @@ services:
         "--data-dir=${RGB_DATA_DIR}",
         "--electrum-server=${ELECTRS_HOST}",
         "--electrum-port=${ELECTRS_PORT}",
-        "--store=172.20.0.4:${STORE_RPC_PORT}"
+        "--store=${STORE_HOST_1}:${STORE_RPC_PORT}"
       ]
-    depends_on:
+    depends_on: 
       - electrs
       - store1
     volumes:    
@@ -25,6 +25,31 @@ services:
       nodes_network:
         aliases:
           - ${RGB_HOST_1}
+
+  rgb2:
+    build:
+      context: ./rgb-node/
+    container_name: rgb1
+    restart: unless-stopped
+    command:
+      [
+        "-vvvv",
+        "--network=regtest",
+        "--data-dir=${RGB_DATA_DIR}",
+        "--electrum-server=${ELECTRS_HOST}",
+        "--electrum-port=${ELECTRS_PORT}",
+        "--store=${STORE_HOST_2}:${STORE_RPC_PORT}"
+      ]
+    depends_on:
+      - electrs
+      - store1
+    volumes:    
+      - rgb2_data:/var/lib/rgb
+      - store2_data:/var/lib/store      
+    networks:
+      nodes_network:
+        aliases:
+          - ${RGB_HOST_1}          
 
   store1:
     build:
@@ -36,3 +61,14 @@ services:
     networks:
       nodes_network:
         ipv4_address: 172.20.0.4
+
+  store2:
+    build:
+      context: ./store-node/
+    container_name: store2
+    restart: unless-stopped
+    volumes:
+      - store2_data:/var/lib/store
+    networks:
+      nodes_network:
+        ipv4_address: 172.20.0.5        
