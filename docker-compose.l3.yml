@@ -1,11 +1,11 @@
 version: "2.4"
 services:
   rgb1:
+    container_name: rgb1
+    image: sr/rgb:latest
     build:
       context: ./rgb-node/
-    container_name: rgb1
     restart: unless-stopped
-    # entrypoint: bash
     command:
       [
         "-vvvv",
@@ -22,14 +22,15 @@ services:
       - rgb1_data:/var/lib/rgb
       - store1_data:/var/lib/store      
     networks:
-      nodes_network:
+      sr_network:
         aliases:
           - ${RGB_HOST_1}
 
   rgb2:
+    container_name: rgb2
+    image: sr/rgb:latest
     build:
       context: ./rgb-node/
-    container_name: rgb2
     restart: unless-stopped
     command:
       [
@@ -47,28 +48,30 @@ services:
       - rgb2_data:/var/lib/rgb
       - store2_data:/var/lib/store      
     networks:
-      nodes_network:
+      sr_network:
         aliases:
           - ${RGB_HOST_1}          
 
   store1:
+    container_name: store1
+    image: sr/store:latest
     build:
       context: ./store-node/
-    container_name: store1
     restart: unless-stopped
     volumes:
       - store1_data:/var/lib/store
     networks:
-      nodes_network:
+      sr_network:
         ipv4_address: 172.20.0.4
 
   store2:
+    container_name: store2
+    image: sr/store:latest
     build:
       context: ./store-node/
-    container_name: store2
     restart: unless-stopped
     volumes:
       - store2_data:/var/lib/store
     networks:
-      nodes_network:
+      sr_network:
         ipv4_address: 172.20.0.5        

@@ -1,7 +1,7 @@
 version: "3"
 
 networks:
-  nodes_network:
+  sr_network:
     driver: bridge
     ipam:
       config:
@@ -21,9 +21,10 @@ volumes:
 
 services:
   node1:
+    container_name: node1
+    image: sr/node:latest
     build:
       context: ./bitcoin/
-    container_name: node1
     restart: unless-stopped
     command:
       [
@@ -56,14 +57,15 @@ services:
     volumes:
       - node1_data:/home/bitcoin/.bitcoin
     networks:
-      nodes_network:
+      sr_network:
         aliases:
           - ${BITCOIN_HOST_1}
 
   node2:
+    container_name: node2
+    image: sr/node:latest
     build:
       context: ./bitcoin/
-    container_name: node2
     restart: unless-stopped
     command:
       [
@@ -96,6 +98,6 @@ services:
     volumes:
       - node2_data:/home/bitcoin/.bitcoin
     networks:
-      nodes_network:
+      sr_network:
         aliases:
           - ${BITCOIN_HOST_2}

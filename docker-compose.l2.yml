@@ -2,6 +2,7 @@ version: "2.4"
 services:
   lnp1:
     container_name: lnp1
+    image: sr/lnp:latest
     build:
       context: ./lnp-node/
     restart: unless-stopped
@@ -14,16 +15,18 @@ services:
         "--data-dir=/var/lib/lnp"
       ]
     depends_on:
+      - node1
       - electrs
     volumes:
-      - lnp1_data:/var/lib/lnp/.lnp_node
+      - lnp1_data:/var/lib/lnp
     networks:
-      nodes_network:
+      sr_network:
         aliases:
           - ${LNP_HOST_1}
 
   lnp2:
     container_name: lnp2
+    image: sr/lnp:latest
     build:
       context: ./lnp-node/
     restart: unless-stopped
@@ -36,18 +39,20 @@ services:
         "--data-dir=/var/lib/lnp"
       ]
     depends_on:
+      - node2
       - electrs
     volumes:
-      - lnp2_data:/var/lib/lnp/.lnp_node
+      - lnp2_data:/var/lib/lnp
     networks:
-      nodes_network:
+      sr_network:
         aliases:
           - ${LNP_HOST_2}
 
   cln1:
+    container_name: cln1
+    image: sr/cln:latest
     build:
       context: ./clightning/
-    container_name: cln1
     restart: unless-stopped
     command:
       [
@@ -64,7 +69,7 @@ services:
     depends_on:
       - node1
     networks:
-      nodes_network:
+      sr_network:
         aliases:
           - ${CLN_HOST_1}
     volumes:

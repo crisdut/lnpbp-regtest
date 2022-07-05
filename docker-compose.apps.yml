@@ -1,9 +1,10 @@
 version: "2.4"
 services:
   electrs:
+    container_name: electrs
+    image: sr/electrs:latest
     build:
       context: ./electrs/  
-    container_name: electrs
     restart: unless-stopped
     command:
       [
@@ -18,6 +19,6 @@ services:
     depends_on:
       - node1
     networks:
-      nodes_network:
+      sr_network:
         aliases:
           - ${ELECTRS_HOST}

@@ -23,27 +23,32 @@ docker-compose build
 alias b01="docker-compose exec -T node1 bitcoin-cli -chain=regtest -rpcconnect=localhost -rpcport=18444 -rpcuser=bitcoin -rpcpassword=bitcoin"
 alias b02="docker-compose exec -T node2 bitcoin-cli -chain=regtest -rpcconnect=localhost -rpcport=18444 -rpcuser=bitcoin -rpcpassword=bitcoin"
 
-alias rgbd1="docker-compose run --rm rgb1 -vvvv --network=regtest --bin-dir=/usr/local/bin/ --data-dir=/var/lib/rgb/ --electrum=electrs:50001"
-alias rgbd2="docker-compose run --rm rgb2 -vvvv --network=regtest --bin-dir=/usr/local/bin/ --data-dir=/var/lib/rgb/ --electrum=electrs:50001"
-
-alias lnpd1="docker-compose run --rm lnp1 --network=regtest -vvvv --data-dir=/var/lib/lnp/"
-alias lnpd2="docker-compose run --rm lnp2 --network=regtest -vvvv --data-dir=/var/lib/lnp/"
-
-alias rgb01="docker-compose exec rgb1 rgb-cli -vvvv --network=regtest --data-dir=/var/lib/rgb/"
-alias rgb02="docker-compose exec rgb2 rgb-cli -vvvv --network=regtest --data-dir=/var/lib/rgb/"
-
-alias fungible1="docker-compose exec rgb1 rgb20 -vvvv --network=regtest"
-alias fungible2="docker-compose exec rgb2 rgb20 -vvvv --network=regtest"
+alias lnpd1="docker-compose run --rm lnp1 --network=regtest -vvvv --data-dir=/var/lib/lnp --electrum-server=electrs --electrum-port=50001"
+alias lnpd2="docker-compose run --rm lnp2 --network=regtest -vvvv --data-dir=/var/lib/lnp --electrum-server=electrs --electrum-port=50001"
 
 alias lnp01="docker-compose exec lnp1 lnp-cli -vvvv"
 alias lnp02="docker-compose exec lnp2 lnp-cli -vvvv"
 
 alias cln01="docker-compose exec cln1 lightning-cli --network=regtest"
 
+alias rgbd1="docker-compose run --rm rgb1 -vvvv --network=regtest --bin-dir=/usr/local/bin/ --data-dir=/var/lib/rgb --electrum-server=electrs --electrum-port=50001"
+alias rgbd2="docker-compose run --rm rgb2 -vvvv --network=regtest --bin-dir=/usr/local/bin/ --data-dir=/var/lib/rgb --electrum-server=electrs --electrum-port=50001"
+
+alias rgb01="docker-compose exec rgb1 rgb-cli -vvvv --network=regtest --data-dir=/var/lib/rgb"
+alias rgb02="docker-compose exec rgb2 rgb-cli -vvvv --network=regtest --data-dir=/var/lib/rgb"
+
+alias fungible1="docker-compose exec rgb1 rgb20 -vvvv --network=regtest"
+alias fungible2="docker-compose exec rgb2 rgb20 -vvvv --network=regtest"
+
+
 # Update rust
 rustup component add rust-src --toolchain nightly
 ```
-### Start Network 
+### Start Nodes
+
+
+
+#### Running L1 
 
 ```bash
 # 1- Up and running nodes
@@ -68,29 +73,33 @@ b02 -rpcwallet=beta settxfee 0.00001
 b01 generatetoaddress 500 $(echo $addr1)
 b02 generatetoaddress 500 $(echo $addr2)
 
-
 # 5- List transaction and output unspent
 b01 -rpcwallet=alpha listtransactions
 b01 -rpcwallet=alpha listunspent
 
 b02 -rpcwallet=beta listtransactions
 b02 -rpcwallet=beta listunspent
-# Example
-# $txid='1dc2dfa2988dd35116e2ac3ce17d8d87afd282ce675a9f2a3916fc5c6cbcb08c'
-# $out='0'
-
-### Funding Wallet
-
-# 1- Generate funding wallet
-lnpd1 init
-# Example
-# $pk='tprv8ZgxMBicQKsPdYauyAQ2rzEptsCep1ZvuT1A2WTouSYoHGwAYicgR59irVbCuATyv4GffwJnHLvrtiHc7F4z1ckL6hP8KpeagH89CCoysSy'
 ```
 
-### Create new Asset 
+#### Running L2
 
 ```bash
-# 1- Generate new issue
+# 1- Generate funding wallet
+lnpd1 init
+lnpd2 init
+# tprv8ZgxMBicQKsPdYauyAQ2rzEptsCep1ZvuT1A2WTouSYoHGwAYicgR59irVbCuATyv4GffwJnHLvrtiHc7F4z1ckL6hP8KpeagH89CCoysSy
+
+# 2- Up and running nodes
+docker-compose up -d lnp1 lnp2
+```
+
+#### Running L3 and Create Issue 
+
+```bash
+# 1- Up and running nodes
+docker-compose up -d rgb1 rgb2
+
+# 2- Generate new issue
 ticker="USDT"
 name="Tether"
 ```
