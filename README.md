@@ -46,9 +46,7 @@ rustup component add rust-src --toolchain nightly
 ```
 ### Start Nodes
 
-
-
-#### Running L1 
+### _Running L1_ 
 
 ```bash
 # 1- Up and running nodes
@@ -81,25 +79,33 @@ b02 -rpcwallet=beta listtransactions
 b02 -rpcwallet=beta listunspent
 ```
 
-#### Running L2
+### _Running L2_
 
 ```bash
 # 1- Generate funding wallet
-lnpd1 init
-lnpd2 init
-# tprv8ZgxMBicQKsPdYauyAQ2rzEptsCep1ZvuT1A2WTouSYoHGwAYicgR59irVbCuATyv4GffwJnHLvrtiHc7F4z1ckL6hP8KpeagH89CCoysSy
+lnpd1 init # tprv8ZgxMBicQKsPdYauyAQ2rzEptsCep1ZvuT1A2WTouSYoHGwAYicgR59irVbCuATyv4GffwJnHLvrtiHc7F4z1ckL6hP8KpeagH89CCoysSy
+lnpd2 init # tprv8ZgxMBicQKsPdXjTY8BuF4WPhEhfGELSMiZM1XfLNcR2hka3wTKPqakbpMDHedYaRBJwPBeADqRnGPNHGCuqk9FUVmj5fJrzvbnoQPoTTTN
 
 # 2- Up and running nodes
 docker-compose up -d lnp1 lnp2
-```
 
-#### Running L3 and Create Issue 
+# 3- Connect nodes
+lnp02 info 
+lnp01 connect `$pb@lnp02` 
+
+```
+### _Running L3_ 
 
 ```bash
 # 1- Up and running nodes
-docker-compose up -d rgb1 rgb2
+docker-compose up -d store1 store2
+docker-compose up -d rgb1 rgb2 
+```
 
-# 2- Generate new issue
+### _Create Issue_
+
+```bash
+# 1- Generate new issue
 ticker="USDT"
 name="Tether"
 ```
