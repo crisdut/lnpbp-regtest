@@ -45,4 +45,4 @@ EXPOSE 9735 62962
 WORKDIR ${BIN_DIR}
 
 ENTRYPOINT ["lnpd"]
-CMD ["-vvv", "--data-dir", "/var/lib/lnp"]
+CMD ["-vvvv", "--data-dir", "/var/lib/lnp"]

@@ -20,8 +20,8 @@
 docker-compose build
 
 # Command Alias (Docker)
-alias b01="docker-compose exec node1 bitcoin-cli -chain=regtest -rpcconnect=localhost -rpcport=18889 -rpcuser=bitcoin -rpcpassword=bitcoin"
-alias b02="docker-compose exec node2 bitcoin-cli -chain=regtest -rpcconnect=localhost -rpcport=18889 -rpcuser=bitcoin -rpcpassword=bitcoin"
+alias b01="docker-compose exec -T node1 bitcoin-cli -chain=regtest -rpcconnect=localhost -rpcport=18444 -rpcuser=bitcoin -rpcpassword=bitcoin"
+alias b02="docker-compose exec -T node2 bitcoin-cli -chain=regtest -rpcconnect=localhost -rpcport=18444 -rpcuser=bitcoin -rpcpassword=bitcoin"
 
 alias rgbd1="docker-compose run --rm rgb1 -vvvv --network=regtest --bin-dir=/usr/local/bin/ --data-dir=/var/lib/rgb/ --electrum=electrs:50001"
 alias rgbd2="docker-compose run --rm rgb2 -vvvv --network=regtest --bin-dir=/usr/local/bin/ --data-dir=/var/lib/rgb/ --electrum=electrs:50001"
@@ -43,33 +43,45 @@ alias cln01="docker-compose exec cln1 lightning-cli --network=regtest"
 # Update rust
 rustup component add rust-src --toolchain nightly
 ```
-
-### Start Network and Funding Wallet 
+### Start Network 
 
 ```bash
-# 1- Generate and/or Load wallets
+# 1- Up and running nodes
+docker-compose up -d node1 node2
+
+# 2- Connect nodes
+b01 addnode node2:18444 onetry
+b02 addnode node1:18444 onetry
+
+# 2- Generate and/or Load wallets
 b01 -named createwallet wallet_name='alpha' descriptors=true # or  b01 loadwallet alpha
 b02 -named createwallet wallet_name='beta' descriptors=true # or  b02 loadwallet beta
 
-# 2- Generate two bitcoin address
-addr1="b01 -rpcwallet=alpha getnewaddress"
-addr2="b02 -rpcwallet=beta getnewaddress"
+# 3- Generate two bitcoin address
+addr1=$(b01 -rpcwallet=alpha getnewaddress)
+addr2=$(b02 -rpcwallet=beta getnewaddress)
 
-# 3- Generate new blocks and transfer
+# 4- Generate new blocks and transfer
 b01 -rpcwallet=alpha settxfee 0.00001
-b01 generatetoaddress 500 $addr1
-b01 -rpcwallet=beta listunspent
-
 b02 -rpcwallet=beta settxfee 0.00001 
-b02 generatetoaddress 500 $addr2
 
-# 4- List transaction and output unspent
+b01 generatetoaddress 500 $(echo $addr1)
+b02 generatetoaddress 500 $(echo $addr2)
+
+
+# 5- List transaction and output unspent
 b01 -rpcwallet=alpha listtransactions
+b01 -rpcwallet=alpha listunspent
+
+b02 -rpcwallet=beta listtransactions
+b02 -rpcwallet=beta listunspent
 # Example
 # $txid='1dc2dfa2988dd35116e2ac3ce17d8d87afd282ce675a9f2a3916fc5c6cbcb08c'
 # $out='0'
 
-# 5- Generate funding wallet
+### Funding Wallet
+
+# 1- Generate funding wallet
 lnpd1 init
 # Example
 # $pk='tprv8ZgxMBicQKsPdYauyAQ2rzEptsCep1ZvuT1A2WTouSYoHGwAYicgR59irVbCuATyv4GffwJnHLvrtiHc7F4z1ckL6hP8KpeagH89CCoysSy'
