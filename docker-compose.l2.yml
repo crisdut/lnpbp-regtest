@@ -19,8 +19,10 @@ services:
       - electrs
     volumes:
       - lnp1_data:/var/lib/lnp
+    expose: [9735, 62962]      
     networks:
       sr_network:
+        ipv4_address: 172.20.0.10      
         aliases:
           - ${LNP_HOST_1}
 
@@ -43,8 +45,10 @@ services:
       - electrs
     volumes:
       - lnp2_data:/var/lib/lnp
+    expose: [9735, 62962]
     networks:
       sr_network:
+        ipv4_address: 172.20.0.11
         aliases:
           - ${LNP_HOST_2}
 
@@ -70,6 +74,7 @@ services:
       - node1
     networks:
       sr_network:
+        ipv4_address: 172.20.0.12
         aliases:
           - ${CLN_HOST_1}
     volumes:

@@ -1,4 +1,7 @@
 version: "2.4"
+volumes:
+  electrs_data:
+
 services:
   electrs:
     container_name: electrs
@@ -16,9 +19,14 @@ services:
         "--daemon-p2p-addr=node1:${BITCOIN_PORT}",
         "--daemon-rpc-addr=node1:${BITCOIN_RPC_PORT}"
       ]
+    volumes:
+      - electrs_data:/home/electrs
     depends_on:
       - node1
+    ports:
+      - ${ELECTRS_PORT}:${ELECTRS_PORT}
     networks:
       sr_network:
         aliases:
           - ${ELECTRS_HOST}
+  

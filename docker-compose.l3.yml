@@ -62,7 +62,7 @@ services:
       - store1_data:/var/lib/store
     networks:
       sr_network:
-        ipv4_address: 172.20.0.4
+        ipv4_address: 172.20.0.7
 
   store2:
     container_name: store2
@@ -74,4 +74,4 @@ services:
       - store2_data:/var/lib/store
     networks:
       sr_network:
-        ipv4_address: 172.20.0.5        
+        ipv4_address: 172.20.0.8   
