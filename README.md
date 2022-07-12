@@ -56,8 +56,8 @@ docker-compose up -d node1 node2
 b01 addnode node2:18444 onetry
 b02 addnode node1:18444 onetry
 
-# CHANGE HERE > https://gist.github.com/pinheadmz/cbf419396ac983ffead9670dde258a43
 # 2- Generate and/or Load wallets
+# CHANGE HERE > https://gist.github.com/pinheadmz/cbf419396ac983ffead9670dde258a43
 b01 -named createwallet wallet_name='alpha' descriptors=true # or  b01 loadwallet alpha
 b02 -named createwallet wallet_name='beta' descriptors=true # or  b02 loadwallet beta
 
@@ -113,7 +113,7 @@ docker-compose up -d rgb1 rgb2
 
 ```bash
 # 1- Generate new issue
-txid='2c9b0f0c4346860357c6b8fafd459a288e409a8141507b7e2a5ef1716f5c82b7' #example
+txid='b3be691abc0b4df9053d440ff46375f121a4de367aac685f0c1f295669ab94b6' #example (psbt unspent)
 vout='0' #example
 
 ticker="SRC"
@@ -129,14 +129,14 @@ fungible1 issue "$ticker" "$name" $allocation
 rgb01 register $contract
 
 # 2- Prepare Consignment (State Transfer)
-unspent_txid='e2250abfdcbcf9240e065ecf304cd86cfb0a7f45e5a5f0627c82d8c9365ca4ff' #example
+unspent_txid='a32328468978cf09092e2b55525e3a9228a639032d9f569a650ddb57231ebfff' #example
 unspent_vout='0' #example
 
 rgb01 compose $contractID $unspent_txid:$unspent_vout /var/lib/rgb/consignment.rgb
 # docker cp [DOCKER_CONTAINER_ID]:/var/lib/rgb/consignment.rgb ./shared/ <--- for docker noobs =)
 
 # 3- Create Blind UTXO
-dest_txid='fb10344c488c66408310f8e47ebc9f3776d23b0595c07ee16814c725ee6eb2ff' #example
+dest_txid='27349fc4a6bde9e8f6c7c69761d5a0f0ffa3f1cd9936a802b7bd4261bcb2b8ff' #example
 dest_vout='0' #example
 
 fungible1 blind $dest_txid:$dest_vout
@@ -144,33 +144,40 @@ fungible1 blind $dest_txid:$dest_vout
 # Output=> 16669351361466217679 (Blinding factor)
 
 # 4- Prepare to Transfer
+atomic_value=$amount
 transfer_value="$atomic_value@$seal_definition"
-fungible1 transfer --utxo $txid:$vout /var/lib/rgb/consignment.rgb $transfer_amount /var/lib/rgb/transfer.rgb
+fungible1 transfer --utxo "$txid:$vout" /var/lib/rgb/consignment.rgb $transfer_value /var/lib/rgb/transfer.rgb
 
 # 5- Transfer Asset (After Create PSBT)
-rgb01 transfer $contractID /var/lib/rgb/transfer.rgb 
+rgb01 transfer $contractID /var/lib/rgb/transfer.rgb /var/lib/rgb/psbt.rgb 
 
-# 6- Pay Invoice
-# 6- Confirm Payment
+# 6- Confirm Transfer
 ```
 
 ### _Bonus: Create PSBT_
 
 ```bash
-# 1- Export wallet descriptor
-b01 listdescriptors
+# 1- Generate seed and private key
+btc-hot seed -P ./tr.seed
 
-# 3- Save Wallet Descriptor
+# 2- Save Wallet Descriptor
+btc-hot derive --testnet -P ./tr.seed ./tr.derive
 wl="tr(m=[..."
 
-cat $wl > ./tr
+cat $wl > ./tr.wd
 
 # 4- Generate Wallet
-btc-cold create ./tr ./tr.wallet
+btc-cold create ./tr.wd ./tr.wallet
 
-# 5- Generate Address
+# 5- Get Address
 btc-cold address ./tr.wallet
+addr_dw="tb1p..."
 
-# 6- Construct PSBT
+# 6- Transfer and Mine
+b01 -rpcwallet=alpha sendtoaddress $addr_dw 100
+b01 -rpcwallet=alpha generatetoaddress 500 $(echo $addr1)
+
+# 6- Construct PSBT (Retrieve UTXO)
+btc-cold check tr.wallet -e $electrum_host -p $electrum_port
 btc-cold construct ./tr.wallet ./psbt.rgb 1000 --input "$txid:$vout /0/0 rbf" -e $electrum_host -p $electrum_port
 ```

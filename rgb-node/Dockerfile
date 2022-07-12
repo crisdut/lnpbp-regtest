@@ -1,3 +1,26 @@
+FROM rust:1.61.0-slim-buster as builderstd
+ARG BUILDER_DIR=/srv/rgb
+
+RUN apt-get update \
+    && apt-get -y install --no-install-recommends \
+        wget build-essential cmake git pkg-config \
+        libpq-dev libssl-dev libzmq3-dev libsqlite3-dev
+
+WORKDIR $BUILDER_DIR
+RUN cargo install rgb-std --version "=0.8.0-rc.2" \
+        --locked --all-features --root "${BUILDER_DIR}"
+
+FROM rust:1.61.0-slim-buster as builder
+ARG SOURCE_CODE=https://github.com/crisdut/rgb-node.git
+ARG BUILDER_SOURCE=/opt/src/rgb
+ARG BUILDER_DIR=/srv/rgb
+ARG VERSION=d36e4ad
+
+RUN apt-get update \
+    && apt-get -y install --no-install-recommends \
+        wget build-essential cmake git pkg-config \
+        libpq-dev libssl-dev libzmq3-dev libsqlite3-dev
+
 FROM rust:1.61.0-slim-buster as builder20
 ARG BUILDER_DIR=/srv/rgb
 
@@ -7,7 +30,7 @@ RUN apt-get update \
         libpq-dev libssl-dev libzmq3-dev libsqlite3-dev
 
 WORKDIR $BUILDER_DIR
-RUN cargo install rgb20 --version "=0.8.0-beta.2" \
+RUN cargo install rgb20 --version "=0.8.0-rc.2" \
         --locked --all-features --root "${BUILDER_DIR}"
 
 FROM rust:1.61.0-slim-buster as builder
@@ -35,6 +58,9 @@ ARG USER=rgbd
 
 RUN adduser --home "${DATA_DIR}" --shell /bin/bash --disabled-login \
         --gecos "${USER} user" ${USER}
+
+COPY --from=builderstd --chown=${USER}:${USER} \
+     "${BUILDER_DIR}/bin/" "${BIN_DIR}/"
 
 COPY --from=builder20 --chown=${USER}:${USER} \
      "${BUILDER_DIR}/bin/" "${BIN_DIR}/"
