@@ -11,14 +11,6 @@ networks:
 volumes:
   node1_data:
   node2_data:
-  cln1_data:
-  lnp1_data:
-  lnp2_data:  
-  rgb1_data:
-  rgb2_data:
-  store1_data:
-  store2_data:
-  storm1_data:        
 
 services:
   node1:

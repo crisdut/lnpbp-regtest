@@ -1,13 +1,15 @@
 version: "2.4"
 volumes:
   electrs_data:
+  chat1_data:
+  file1_data:
 
 services:
   electrs:
     container_name: electrs
     image: sr/electrs:latest
     build:
-      context: ./electrs/  
+      context: ./electrs/
     restart: unless-stopped
     command:
       [
@@ -17,7 +19,7 @@ services:
         "--db-dir=/home/electrs/db",
         "--electrum-rpc-addr=0.0.0.0:${ELECTRS_PORT}",
         "--daemon-p2p-addr=node1:${BITCOIN_PORT}",
-        "--daemon-rpc-addr=node1:${BITCOIN_RPC_PORT}"
+        "--daemon-rpc-addr=node1:${BITCOIN_RPC_PORT}",
       ]
     volumes:
       - electrs_data:/home/electrs
@@ -30,4 +32,49 @@ services:
         ipv4_address: 172.20.0.22
         aliases:
           - ${ELECTRS_HOST}
-  
+
+  chat1:
+    container_name: chat1
+    image: sr/storm:latest
+    build:
+      context: ./storm-node/
+    restart: unless-stopped
+    command:
+      [
+        "-vvvv",
+        "--data-dir=${STORM_DATA_DIR}",
+        "--store-endpoint=${STORE_HOST_1}:${STORE_RPC_PORT}",
+        "--msg=${LNP_IP_1}:${LNP_RPC_PORT}",
+        "--chat",
+      ]
+    depends_on:
+      - lnp1
+      - store1
+    volumes:
+      - chat1_data:/var/lib/storm
+    networks:
+      sr_network:
+        ipv4_address: 172.20.0.20
+
+  file1:
+    container_name: file1
+    image: sr/storm:latest
+    build:
+      context: ./storm-node/
+    restart: unless-stopped
+    command:
+      [
+        "-vvvv",
+        "--data-dir=${STORM_DATA_DIR}",
+        "--store-endpoint=${STORE_HOST_1}:${STORE_RPC_PORT}",
+        "--msg=${LNP_IP_1}:${LNP_RPC_PORT}",
+        "--downpour",
+      ]
+    depends_on:
+      - lnp1
+      - store1
+    volumes:
+      - file1_data:/var/lib/storm
+    networks:
+      sr_network:
+        ipv4_address: 172.20.0.24

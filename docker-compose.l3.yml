@@ -1,4 +1,10 @@
 version: "2.4"
+volumes:
+  rgb1_data:
+  rgb2_data:
+  store1_data:
+  store2_data:
+
 services:
   rgb1:
     container_name: rgb1
@@ -13,21 +19,21 @@ services:
         "--data-dir=${RGB_DATA_DIR}",
         "--electrum-server=${ELECTRS_HOST}",
         "--electrum-port=${ELECTRS_PORT}",
-        "--store=${STORE_HOST_1}:${STORE_RPC_PORT}"
+        "--store=${STORE_HOST_1}:${STORE_RPC_PORT}",
       ]
-    depends_on: 
+    depends_on:
       - electrs
       - store1
-    volumes:    
+    volumes:
       - rgb1_data:/var/lib/rgb
-      - store1_data:/var/lib/store     
+      - store1_data:/var/lib/store
     ports:
-      - ${RGB_RPC_PORT}:${RGB_RPC_PORT} 
+      - ${RGB_RPC_PORT}:${RGB_RPC_PORT}
     networks:
       sr_network:
         ipv4_address: 172.20.0.14
         aliases:
-          - ${RGB_HOST_1}   
+          - ${RGB_HOST_1}
 
   rgb2:
     container_name: rgb2
@@ -42,19 +48,19 @@ services:
         "--data-dir=${RGB_DATA_DIR}",
         "--electrum-server=${ELECTRS_HOST}",
         "--electrum-port=${ELECTRS_PORT}",
-        "--store=${STORE_HOST_2}:${STORE_RPC_PORT}"
+        "--store=${STORE_HOST_2}:${STORE_RPC_PORT}",
       ]
     depends_on:
       - electrs
       - store1
-    volumes:    
+    volumes:
       - rgb2_data:/var/lib/rgb
-      - store2_data:/var/lib/store      
+      - store2_data:/var/lib/store
     networks:
       sr_network:
-        ipv4_address: 172.20.0.16      
+        ipv4_address: 172.20.0.16
         aliases:
-          - ${RGB_HOST_1}          
+          - ${RGB_HOST_1}
 
   store1:
     container_name: store1
@@ -65,21 +71,7 @@ services:
     volumes:
       - store1_data:/var/lib/store
     ports:
-      - ${STORE_RPC_PORT}:${STORE_RPC_PORT}       
+      - ${STORE_RPC_PORT}:${STORE_RPC_PORT}
     networks:
       sr_network:
         ipv4_address: 172.20.0.18
-
-  storm1:
-    container_name: storm1
-    image: sr/storm:latest
-    build:
-      context: ./storm-node/
-    restart: unless-stopped
-    volumes:
-      - storm1_data:/var/lib/storm
-    ports:
-      - ${STORM_RPC_PORT}:${STORM_RPC_PORT}       
-    networks:
-      sr_network:
-        ipv4_address: 172.20.0.20

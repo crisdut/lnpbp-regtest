@@ -1,4 +1,9 @@
 version: "2.4"
+volumes:
+  cln1_data:
+  lnp1_data:
+  lnp2_data:  
+
 services:
   lnp1:
     container_name: lnp1
@@ -22,7 +27,7 @@ services:
     expose: [9735, 62962]      
     networks:
       sr_network:
-        ipv4_address: 172.20.0.8      
+        ipv4_address: 172.20.0.8  
         aliases:
           - ${LNP_HOST_1}
 

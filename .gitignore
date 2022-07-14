@@ -1,6 +1,6 @@
+shared/
 /*.cert
 logs
 *.psbt
 *.key
-
 /shared

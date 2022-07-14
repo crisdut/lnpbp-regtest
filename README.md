@@ -20,19 +20,21 @@
 docker-compose build
 
 # Command Alias (Docker)
-alias b01="docker-compose exec -T node1 bitcoin-cli -chain=regtest -rpcconnect=localhost -rpcport=18444 -rpcuser=bitcoin -rpcpassword=bitcoin"
-alias b02="docker-compose exec -T node2 bitcoin-cli -chain=regtest -rpcconnect=localhost -rpcport=18444 -rpcuser=bitcoin -rpcpassword=bitcoin"
+source .env
 
-alias lnpd1="docker-compose run --rm lnp1 --network=regtest -vvvv --data-dir=/var/lib/lnp --electrum-server=electrs --electrum-port=50001"
-alias lnpd2="docker-compose run --rm lnp2 --network=regtest -vvvv --data-dir=/var/lib/lnp --electrum-server=electrs --electrum-port=50001"
+alias b01="docker-compose exec -T node1 bitcoin-cli -chain=regtest -rpcconnect=localhost -rpcport=${BITCOIN_RPC_PORT} -rpcuser=${BITCOIN_RPC_USER} -rpcpassword=${BITCOIN_RPC_PASSWORD}"
+alias b02="docker-compose exec -T node2 bitcoin-cli -chain=regtest -rpcconnect=localhost -rpcport=${BITCOIN_RPC_PORT} -rpcuser=${BITCOIN_RPC_USER} -rpcpassword=${BITCOIN_RPC_PASSWORD}"
+
+alias lnpd1="docker-compose run --rm lnp1 --network=regtest -vvvv --data-dir=${LNP_DATA_DIR} --electrum-server=${ELECTRS_IP} --electrum-port=${ELECTRS_PORT}"
+alias lnpd2="docker-compose run --rm lnp2 --network=regtest -vvvv --data-dir=${LNP_DATA_DIR} --electrum-server=${ELECTRS_IP} --electrum-port=${ELECTRS_PORT}"
 
 alias lnp01="docker-compose exec -T lnp1 lnp-cli -vvvv"
 alias lnp02="docker-compose exec -T lnp2 lnp-cli -vvvv"
 
 alias cln01="docker-compose exec cln1 lightning-cli --network=regtest"
 
-alias rgbd1="docker-compose run --rm rgb1 -vvvv --network=regtest --bin-dir=/usr/local/bin/ --data-dir=/var/lib/rgb --electrum-server=electrs --electrum-port=50001"
-alias rgbd2="docker-compose run --rm rgb2 -vvvv --network=regtest --bin-dir=/usr/local/bin/ --data-dir=/var/lib/rgb --electrum-server=electrs --electrum-port=50001"
+alias rgbd1="docker-compose run --rm rgb1 -vvvv --network=regtest --bin-dir=${RGB_BIN_DIR} --data-dir=${RPC_DATA_DIR} --electrum-server=${ELECTRS_HOST} --electrum-port=${ELECTRS_PORT}"
+alias rgbd2="docker-compose run --rm rgb2 -vvvv --network=regtest --bin-dir=${RGB_BIN_DIR} --data-dir=${RGB_DATA_DIR} --electrum-server=${ELECTRS_HOST} --electrum-port=${ELECTRS_PORT}"
 
 alias rgb01="docker-compose exec -T rgb1 rgb-cli -vvvv --network=regtest"
 alias rgb02="docker-compose exec -T rgb2 rgb-cli -vvvv --network=regtest"
@@ -43,6 +45,11 @@ alias fungible2="docker-compose exec -T rgb2 rgb20 --network=regtest"
 alias rgbstd1="docker-compose exec -T rgb1 rgb"
 alias rgbstd2="docker-compose exec -T rgb2 rgb"
 
+alias storm01="docker-compose exec storm1 storm-cli -vvvv --lnp=${LNP_IP_1}:${LNP_RPC_PORT}"
+alias storm02="docker-compose exec storm2 storm-cli -vvvv --lnp=${LNP_IP_2}:${LNP_RPC_PORT}"
+
+alias chat1="docker-compose run --rm chat1 --data-dir=${STORM_DATA_DIR}"
+alias file1="docker-compose run --rm file1 --data-dir=${STORM_DATA_DIR}"
 
 # Update rust
 rustup component add rust-src --toolchain nightly
@@ -53,7 +60,7 @@ rustup component add rust-src --toolchain nightly
 
 ```bash
 # 1- Up and running nodes
-docker-compose up -d node1 node2
+docker-compose up -d node1 node2 electrs
 
 # 2- Connect nodes
 b01 addnode node2:18444 onetry
@@ -68,7 +75,7 @@ b02 -named createwallet wallet_name='beta' descriptors=true # or  b02 loadwallet
 addr1=$(b01 -rpcwallet=alpha getnewaddress)
 addr2=$(b02 -rpcwallet=beta getnewaddress)
 
-# 4- Generate new blocks and transfer
+# 4- Mine new blocks
 b01 -rpcwallet=alpha settxfee 0.00001
 b02 -rpcwallet=beta settxfee 0.00001 
 

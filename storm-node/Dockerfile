@@ -37,7 +37,7 @@ COPY --from=builder --chown=${USER}:${USER} \
 
 VOLUME "$DATA_DIR"
 
-EXPOSE 64964
+EXPOSE 64964 40940
 
 ENTRYPOINT ["stormd"]
 
