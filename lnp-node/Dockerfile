@@ -1,9 +1,9 @@
 # Builder
 FROM rust:1.61.0-slim-buster as builder
-# TODO: change after new release (fix regtest)
-ARG SOURCE_CODE=https://github.com/crisdut/lnp-node.git
+# ARG SOURCE_CODE=https://github.com/crisdut/lnp-node.git
 ARG BUILDER_SOURCE=/opt/src/lnp
 ARG BUILDER_DIR=/srv/lnp
+# ARG VERSION=a4ad21c
 
 RUN apt-get update -y \
     && apt-get install -y \
@@ -17,9 +17,12 @@ RUN apt-get update -y \
         git
 
 WORKDIR $BUILDER_DIR
-WORKDIR $BUILDER_SOURCE
-RUN git clone $SOURCE_CODE $BUILDER_SOURCE
-RUN cargo install --locked --all-features --path . --root ${BUILDER_DIR}
+# WORKDIR $BUILDER_SOURCE
+# RUN git clone $SOURCE_CODE $BUILDER_SOURCE
+# RUN git checkout $VERSION
+# RUN cargo install --locked --all-features --path . --root ${BUILDER_DIR}
+RUN cargo install lnp_node --version "=0.8.0" \
+        --locked --all-features --root "${BUILDER_DIR}"
 
 # Runtime
 FROM rust:1.61.0-slim-buster as runtime
@@ -48,4 +51,4 @@ EXPOSE 9735 62962
 WORKDIR ${BIN_DIR}
 
 ENTRYPOINT ["lnpd"]
-CMD ["-vvv", "--data-dir", "/var/lib/lnp"]
+CMD ["-vvvv", "--data-dir", "/var/lib/lnp"]

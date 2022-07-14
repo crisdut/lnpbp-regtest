@@ -20,78 +20,172 @@
 docker-compose build
 
 # Command Alias (Docker)
-alias b01="docker-compose exec node1 bitcoin-cli -chain=regtest -rpcconnect=localhost -rpcport=18889 -rpcuser=bitcoin -rpcpassword=bitcoin"
-alias rgb01="docker-compose exec rgb1 rgb-cli --network=regtest --data-dir=/var/lib/rgb/"
-alias rgb02="docker-compose exec rgb2 rgb-cli --network=regtest --data-dir=/var/lib/rgb/"
+alias b01="docker-compose exec -T node1 bitcoin-cli -chain=regtest -rpcconnect=localhost -rpcport=18444 -rpcuser=bitcoin -rpcpassword=bitcoin"
+alias b02="docker-compose exec -T node2 bitcoin-cli -chain=regtest -rpcconnect=localhost -rpcport=18444 -rpcuser=bitcoin -rpcpassword=bitcoin"
 
-alias rgbd1="docker-compose run --rm rgb1 --network=regtest --bin-dir=/usr/local/bin/ --data-dir=/var/lib/rgb/ --electrum=electrs:50001"
-alias rgbd2="docker-compose run --rm rgb2 --network=regtest --bin-dir=/usr/local/bin/ --data-dir=/var/lib/rgb/ --electrum=electrs:50001"
+alias lnpd1="docker-compose run --rm lnp1 --network=regtest -vvvv --data-dir=/var/lib/lnp --electrum-server=electrs --electrum-port=50001"
+alias lnpd2="docker-compose run --rm lnp2 --network=regtest -vvvv --data-dir=/var/lib/lnp --electrum-server=electrs --electrum-port=50001"
 
-alias lnp01="docker-compose exec lnp1 lnp-cli -vvvv"
-alias lnpd1="docker-compose run lnp1 --network=regtest -vvvv"
-
-alias lnp02="docker-compose exec lnp2 lnp-cli -vvvv"
-alias lnpd2="docker-compose run lnp2 --network=regtest -vvvv"
+alias lnp01="docker-compose exec -T lnp1 lnp-cli -vvvv"
+alias lnp02="docker-compose exec -T lnp2 lnp-cli -vvvv"
 
 alias cln01="docker-compose exec cln1 lightning-cli --network=regtest"
+
+alias rgbd1="docker-compose run --rm rgb1 -vvvv --network=regtest --bin-dir=/usr/local/bin/ --data-dir=/var/lib/rgb --electrum-server=electrs --electrum-port=50001"
+alias rgbd2="docker-compose run --rm rgb2 -vvvv --network=regtest --bin-dir=/usr/local/bin/ --data-dir=/var/lib/rgb --electrum-server=electrs --electrum-port=50001"
+
+alias rgb01="docker-compose exec -T rgb1 rgb-cli -vvvv --network=regtest"
+alias rgb02="docker-compose exec -T rgb2 rgb-cli -vvvv --network=regtest"
+
+alias fungible1="docker-compose exec -T rgb1 rgb20 --network=regtest"
+alias fungible2="docker-compose exec -T rgb2 rgb20 --network=regtest"
+
+alias rgbstd1="docker-compose exec -T rgb1 rgb"
+alias rgbstd2="docker-compose exec -T rgb2 rgb"
+
 
 # Update rust
 rustup component add rust-src --toolchain nightly
 ```
+### Start Nodes
 
-### Generate Token
+### _Running L1_ 
 
 ```bash
-# 0- Generate and/or Load wallets
+# 1- Up and running nodes
+docker-compose up -d node1 node2
+
+# 2- Connect nodes
+b01 addnode node2:18444 onetry
+b02 addnode node1:18444 onetry
+
+# 2- Generate and/or Load wallets
+# CHANGE HERE > https://gist.github.com/pinheadmz/cbf419396ac983ffead9670dde258a43
 b01 -named createwallet wallet_name='alpha' descriptors=true # or  b01 loadwallet alpha
-b01 -named createwallet wallet_name='beta' descriptors=true # or  b02 loadwallet beta
+b02 -named createwallet wallet_name='beta' descriptors=true # or  b02 loadwallet beta
 
-# 1- Generate two bitcoin address
-addr1="b01 -rpcwallet=alpha getnewaddress"
-addr2="b01 -rpcwallet=beta getnewaddress"
-addr3="b01 -rpcwallet=beta getnewaddress"
+# 3- Generate two bitcoin address
+addr1=$(b01 -rpcwallet=alpha getnewaddress)
+addr2=$(b02 -rpcwallet=beta getnewaddress)
 
-# 2- Generate new blocks and transfer
-b01 generatetoaddress 500 $addr1
+# 4- Generate new blocks and transfer
 b01 -rpcwallet=alpha settxfee 0.00001
-b01 -rpcwallet=alpha sendtoaddress $addr2 2 
-b01 -rpcwallet=alpha sendtoaddress $addr3 1 
-b01 -rpcwallet=beta listunspent
+b02 -rpcwallet=beta settxfee 0.00001 
 
-# 3- Add TxOut Information
+b01 generatetoaddress 500 $(echo $addr1)
+b02 generatetoaddress 500 $(echo $addr2)
+
+# 5- List transaction and output unspent
 b01 -rpcwallet=alpha listtransactions
-# Example
-# $txid='1dc2dfa2988dd35116e2ac3ce17d8d87afd282ce675a9f2a3916fc5c6cbcb08c'
-# $out='0'
+b01 -rpcwallet=alpha listunspent
 
-# $change_txid='1dc2dfa2988dd35116e2ac3ce17d8d87afd282ce675a9f2a3916fc5c6cbcb08c'
-# $change_out='0'
+b02 -rpcwallet=beta listtransactions
+b02 -rpcwallet=beta listunspent
 
-# $dest_txid='1dc2dfa2988dd35116e2ac3ce17d8d87afd282ce675a9f2a3916fc5c6cbcb08c'
-# $dest_out='0'
+# 6- Send coins (After create Taproot wallet)
+$tapaddr="tb1..."
+b01 sendtoaddress $tapaddr 0.00001
+b01 generatetoaddress 10 $(echo $addr1)
+```
 
-# 4- Generate new issue
-ticker="STK01"
-name="Fungible (Sample)"
-rgb01 fungible issue $ticker $name --precision 0 1@$txid:$out
-# Example
-# $contract_id=rgb1qzkpy3wrt2xyms7lhc67lrr6v93x3a7tkjxr698286qarx2n3wcslhlevj
+### _Running L2_
 
-# 5- Generate blind utxo
-rgb02 fungible blind $dest_txid:$dest_out
-#Example
-# $blind="utxob17cemvl28ctgnrx45shx2z7nxz3hlkspvupd6ay78laqdn9ysc2zsjkm6t8"
-# $blind_secret="8418017085025344047"
+```bash
+# 1- Generate funding wallet
+lnpd1 init # tprv8ZgxMBicQKsPdYauyAQ2rzEptsCep1ZvuT1A2WTouSYoHGwAYicgR59irVbCuATyv4GffwJnHLvrtiHc7F4z1ckL6hP8KpeagH89CCoysSy
+lnpd2 init # tprv8ZgxMBicQKsPdXjTY8BuF4WPhEhfGELSMiZM1XfLNcR2hka3wTKPqakbpMDHedYaRBJwPBeADqRnGPNHGCuqk9FUVmj5fJrzvbnoQPoTTTN
 
-# 6- Generate psbt source
+# 2- Up and running nodes
+docker-compose up -d lnp1 lnp2
 
-# 7- Create new transfer
-rgb01 fungible transfer $blind 1 $asset_id $psbt /var/lib/rgb/consignment.rgb /var/lib/rgb/disclosure.rgb /var/lib/rgb/invoice.rgb -a $txid:$out -i $change_txid:$change_out
+# 3- Connect nodes
+lnp2_ip='172.20.0.11'   # example
+lnp2_port='9735'        # example
 
-# 9- Accept transfer
-rgb02 fungible accept /var/lib/rgb/consignment.rgb $dest_txid:$ $blind_secret
+lnp01 listen # or set --listen parameters on initalization of the node
+lnp02 listen # or set --listen parameters on initalization of the node
 
-# 10- Check transfer (Updated)
-rgb01 fungible enclose /var/lib/rgb/disclosure.rgb
+lnp02 info # get public key
+lnp01 connect `$pb@$lnp2_ip:$lnp2_port` 
 
+```
+### _Running L3_ 
+
+```bash
+# 1- Up and running nodes
+docker-compose up -d store1 store2
+docker-compose up -d rgb1 rgb2 
+```
+
+### _Create Issue_
+
+```bash
+# 1- Generate new issue
+txid='8aa3e74100bbbd437c47c5c6e752cec0a5865e640457a3361c65eb31cfc7c7b2' #example (psbt unspent)
+vout='0' #example
+
+ticker="SRC"
+name="Satoshi Racer Coin"
+amount="100"
+allocation="$amount@$txid:$vout"
+
+fungible1 issue "$ticker" "$name" $allocation
+# Output=> $contractID="rgb1..."
+# Output=> $contract="rgbc1..."
+
+# 2- Sync Contract
+rgb01 contract register $contract
+
+# 2- Prepare Consignment (State Transfer)
+unspent_txid='a32328468978cf09092e2b55525e3a9228a639032d9f569a650ddb57231ebfff' #example
+unspent_vout='0' #example
+
+rgb01 compose $contractID $unspent_txid:$unspent_vout /var/lib/rgb/consignment.rgb
+# docker cp [DOCKER_CONTAINER_ID]:/var/lib/rgb/consignment.rgb ./shared/ <--- for docker noobs =)
+
+# 3- Create Blind UTXO
+dest_txid='27349fc4a6bde9e8f6c7c69761d5a0f0ffa3f1cd9936a802b7bd4261bcb2b8ff' #example
+dest_vout='0' #example
+
+rgbstd1 blind $dest_txid:$dest_vout
+# Output=> txob15ujk37vftssl4eh0a2x72cce2d7q5rgwxjy68k2z4pxtm86r2v3snak74y (Seal Definition)
+# Output=> 16669351361466217679 (Blinding factor)
+
+# 4- Prepare to Transfer
+atomic_value=$amount
+transfer_value="$atomic_value@$seal_definition"
+fungible1 transfer --utxo "$txid:$vout" /var/lib/rgb/consignment.rgb $transfer_value /var/lib/rgb/transfer.rgb
+
+# 5- Transfer Asset (After Create PSBT)
+rgb01 transfer $contractID /var/lib/rgb/transfer.rgb /var/lib/rgb/psbt.rgb 
+
+# 6- Confirm Transfer
+```
+
+### _Bonus: Create PSBT_
+
+```bash
+# 1- Generate seed and private key
+btc-hot seed -P ./tr.seed
+
+# 2- Save Wallet Descriptor
+btc-hot derive --testnet -P ./tr.seed ./tr.derive
+wl="tr(m=[..."
+
+cat $wl > ./tr.wd
+
+# 4- Generate Wallet
+btc-cold create ./tr.wd ./tr.wallet
+
+# 5- Get Address
+btc-cold address ./tr.wallet
+addr_dw="tb1p..."
+
+# 6- Transfer and Mine
+b01 -rpcwallet=alpha sendtoaddress $addr_dw 100
+b01 -rpcwallet=alpha generatetoaddress 500 $(echo $addr1)
+
+# 6- Construct PSBT (Retrieve UTXO)
+btc-cold check tr.wallet -e $electrum_host -p $electrum_port
+btc-cold construct ./tr.wallet ./psbt.rgb 1000 --input "$txid:$vout /0/0 rbf" -e $electrum_host -p $electrum_port
 ```

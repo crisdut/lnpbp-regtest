@@ -1,45 +1,85 @@
 version: "2.4"
 services:
   rgb1:
-    build:
-      context: ./rgb-node/  
     container_name: rgb1
-    restart: unless-stopped
-    command:
-      [
-        "-vvvv",
-        "--network=regtest",
-        "--bin-dir=${RGB_BIN_DIR}",
-        "--data-dir=${RGB_DATA_DIR}",
-        "--electrum=${ELECTRS_HOST}:${ELECTRS_PORT}",
-      ]
-    depends_on:
-      - electrs
-    volumes:
-      - rgb_data:/var/lib/rgb
-    networks:
-      srnet:
-        aliases:
-          - ${RGB_HOST_1}
-
-  rgb2:
+    image: sr/rgb:latest
     build:
       context: ./rgb-node/
-    container_name: rgb2
     restart: unless-stopped
     command:
       [
         "-vvvv",
         "--network=regtest",
-        "--bin-dir=${RGB_BIN_DIR}",
         "--data-dir=${RGB_DATA_DIR}",
-        "--electrum=${ELECTRS_HOST}:${ELECTRS_PORT}",
+        "--electrum-server=${ELECTRS_HOST}",
+        "--electrum-port=${ELECTRS_PORT}",
+        "--store=${STORE_HOST_1}:${STORE_RPC_PORT}"
+      ]
+    depends_on: 
+      - electrs
+      - store1
+    volumes:    
+      - rgb1_data:/var/lib/rgb
+      - store1_data:/var/lib/store     
+    ports:
+      - ${RGB_RPC_PORT}:${RGB_RPC_PORT} 
+    networks:
+      sr_network:
+        ipv4_address: 172.20.0.14
+        aliases:
+          - ${RGB_HOST_1}   
+
+  rgb2:
+    container_name: rgb2
+    image: sr/rgb:latest
+    build:
+      context: ./rgb-node/
+    restart: unless-stopped
+    command:
+      [
+        "-vvvv",
+        "--network=regtest",
+        "--data-dir=${RGB_DATA_DIR}",
+        "--electrum-server=${ELECTRS_HOST}",
+        "--electrum-port=${ELECTRS_PORT}",
+        "--store=${STORE_HOST_2}:${STORE_RPC_PORT}"
       ]
     depends_on:
       - electrs
-    volumes:
-      - rgb_data:/var/lib/rgb
+      - store1
+    volumes:    
+      - rgb2_data:/var/lib/rgb
+      - store2_data:/var/lib/store      
     networks:
-      srnet:
+      sr_network:
+        ipv4_address: 172.20.0.16      
         aliases:
-          - ${RGB_HOST_2}
+          - ${RGB_HOST_1}          
+
+  store1:
+    container_name: store1
+    image: sr/store:latest
+    build:
+      context: ./stored-node/
+    restart: unless-stopped
+    volumes:
+      - store1_data:/var/lib/store
+    ports:
+      - ${STORE_RPC_PORT}:${STORE_RPC_PORT}       
+    networks:
+      sr_network:
+        ipv4_address: 172.20.0.18
+
+  storm1:
+    container_name: storm1
+    image: sr/storm:latest
+    build:
+      context: ./storm-node/
+    restart: unless-stopped
+    volumes:
+      - storm1_data:/var/lib/storm
+    ports:
+      - ${STORM_RPC_PORT}:${STORM_RPC_PORT}       
+    networks:
+      sr_network:
+        ipv4_address: 172.20.0.20

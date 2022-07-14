@@ -77,7 +77,10 @@ COPY docker-entrypoint.sh /entrypoint.sh
 VOLUME ["/home/bitcoin/.bitcoin"]
 RUN bitcoind -version | grep "Bitcoin Core version v${BITCOIN_VERSION}"
 
-EXPOSE 8332 8333 18332 18333 18444
+# rpc
+EXPOSE 18444/tcp
+# p2p
+EXPOSE 18443/tcp
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["bitcoind"]

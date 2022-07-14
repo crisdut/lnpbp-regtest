@@ -19,8 +19,8 @@ RUN rustup override set 1.61 \
 
 # Build stage for compiled artifacts
 FROM alpine:3.14
-ARG BUILDER_DIR=/srv/electrs
-ARG BIN_DIR=/usr/local/bin
+ENV BUILDER_DIR=/srv/electrs
+ENV BIN_DIR=/usr/local/bin
 ARG USER=electrs
 
 RUN adduser -S "${USER}"

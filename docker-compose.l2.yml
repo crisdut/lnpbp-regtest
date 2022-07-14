@@ -2,27 +2,7 @@ version: "2.4"
 services:
   lnp1:
     container_name: lnp1
-    build:
-      context: ./lnp-node/
-    restart: unless-stopped
-    command:
-      [
-        "-vvvv",
-        "--chain=regtest",
-        "--electrum-port=${ELECTRS_PORT}",
-        "--electrum-server=${ELECTRS_HOST}"
-      ]
-    depends_on:
-      - electrs
-    volumes:
-      - lnp_data:/var/lib/lnp/.lnp_node
-    networks:
-      srnet:
-        aliases:
-          - ${LNP_HOST_1}
-
-  lnp2:
-    container_name: lnp2
+    image: sr/lnp:latest
     build:
       context: ./lnp-node/
     restart: unless-stopped
@@ -32,22 +12,52 @@ services:
         "--chain=regtest",
         "--electrum-port=${ELECTRS_PORT}",
         "--electrum-server=${ELECTRS_HOST}",
+        "--data-dir=/var/lib/lnp"
       ]
     depends_on:
+      - node1
       - electrs
     volumes:
-      - lnp_data:/var/lib/lnp/.lnp_node
+      - lnp1_data:/var/lib/lnp
+    expose: [9735, 62962]      
     networks:
-      srnet:
+      sr_network:
+        ipv4_address: 172.20.0.8      
+        aliases:
+          - ${LNP_HOST_1}
+
+  lnp2:
+    container_name: lnp2
+    image: sr/lnp:latest
+    build:
+      context: ./lnp-node/
+    restart: unless-stopped
+    command:
+      [
+        "-vvvv",
+        "--chain=regtest",
+        "--electrum-port=${ELECTRS_PORT}",
+        "--electrum-server=${ELECTRS_HOST}",
+        "--data-dir=/var/lib/lnp"
+      ]
+    depends_on:
+      - node2
+      - electrs
+    volumes:
+      - lnp2_data:/var/lib/lnp
+    expose: [9735, 62962]
+    networks:
+      sr_network:
+        ipv4_address: 172.20.0.10
         aliases:
           - ${LNP_HOST_2}
 
   cln1:
+    container_name: cln1
+    image: sr/cln:latest
     build:
       context: ./clightning/
-    container_name: cln1
     restart: unless-stopped
-    # entrypoint: bash
     command:
       [
         "--alias=${CLN_HOST_1}",
@@ -55,7 +65,6 @@ services:
         "--large-channels",
         "--addr=0.0.0.0:${CLN_PORT}",
         "--bitcoin-cli=/opt/bitcoin/bin/bitcoin-cli",
-        # "--bitcoin-datadir=/data-${BITCOIN_VERSION}",
         "--bitcoin-rpcconnect=${BITCOIN_HOST_1}",
         "--bitcoin-rpcport=${BITCOIN_RPC_PORT}",
         "--bitcoin-rpcuser=${BITCOIN_RPC_USER}",
@@ -64,8 +73,9 @@ services:
     depends_on:
       - node1
     networks:
-      srnet:
+      sr_network:
+        ipv4_address: 172.20.0.12
         aliases:
           - ${CLN_HOST_1}
     volumes:
-      - cln_data:/root/.lightning
+      - cln1_data:/root/.lightning

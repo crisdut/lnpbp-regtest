@@ -1,23 +1,32 @@
 version: "3"
 
 networks:
-  srnet:
+  sr_network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+          gateway: 172.20.0.1    
 
 volumes:
-  bitcoin_data:
-  bitcoin_shared:
-  cln_data:
-  lnp_data:
-  rgb_data:
+  node1_data:
+  node2_data:
+  cln1_data:
+  lnp1_data:
+  lnp2_data:  
+  rgb1_data:
+  rgb2_data:
+  store1_data:
+  store2_data:
+  storm1_data:        
 
 services:
   node1:
+    container_name: node1
+    image: sr/node:latest
     build:
       context: ./bitcoin/
-    container_name: node1
     restart: unless-stopped
-    # entrypoint: bash
     command:
       [
         "-regtest=1",
@@ -26,6 +35,7 @@ services:
         "-txindex=1",
         "-onlynet=ipv4",
         "-dnsseed=0",
+        "-listen=1",
         "-dbcache=10",
         "-port=${BITCOIN_PORT}",
         "-rpcport=${BITCOIN_RPC_PORT}",
@@ -34,14 +44,63 @@ services:
         "-rpcallowip=0.0.0.0/0",
         "-rpcbind=127.0.0.1",
         "-rpcbind=${BITCOIN_HOST_1}",
+        "-connect=${BITCOIN_HOST_2}:${BITCOIN_PORT}",        
         "-zmqpubrawtx=tcp://0.0.0.0:${BITCOIN_ZMQ_TX_PORT}",
         "-zmqpubhashtx=tcp://0.0.0.0:${BITCOIN_ZMQ_TX_PORT}",
         "-zmqpubrawblock=tcp://0.0.0.0:${BITCOIN_ZMQ_BLOCK_PORT}",
         "-zmqpubhashblock=tcp://0.0.0.0:${BITCOIN_ZMQ_BLOCK_PORT}",
       ]
+    ports:
+      - "18400:18443"
+      - "18500:18444"
+    expose: 
+      - "18444"            
     volumes:
-      - bitcoin_data:/home/bitcoin/.bitcoin
+      - node1_data:/home/bitcoin/.bitcoin
     networks:
-      srnet:
+      sr_network:
+        ipv4_address: 172.20.0.4
         aliases:
           - ${BITCOIN_HOST_1}
+
+  node2:
+    container_name: node2
+    image: sr/node:latest
+    build:
+      context: ./bitcoin/
+    restart: unless-stopped
+    command:
+      [
+        "-regtest=1",
+        "-upnp=0",
+        "-server=1",
+        "-txindex=1",
+        "-onlynet=ipv4",
+        "-dnsseed=0",
+        "-listen=1",
+        "-dbcache=10",
+        "-port=${BITCOIN_PORT}",
+        "-rpcport=${BITCOIN_RPC_PORT}",
+        "-rpcuser=${BITCOIN_RPC_USER}",
+        "-rpcpassword=${BITCOIN_RPC_PASSWORD}",
+        "-rpcallowip=0.0.0.0/0",
+        "-rpcbind=127.0.0.1",
+        "-rpcbind=${BITCOIN_HOST_2}",
+        "-connect=${BITCOIN_HOST_1}:${BITCOIN_PORT}",                
+        "-zmqpubrawtx=tcp://0.0.0.0:${BITCOIN_ZMQ_TX_PORT}",
+        "-zmqpubhashtx=tcp://0.0.0.0:${BITCOIN_ZMQ_TX_PORT}",
+        "-zmqpubrawblock=tcp://0.0.0.0:${BITCOIN_ZMQ_BLOCK_PORT}",
+        "-zmqpubhashblock=tcp://0.0.0.0:${BITCOIN_ZMQ_BLOCK_PORT}",
+      ]
+    ports:
+      - "18401:18443"
+      - "18501:18444"
+    expose: 
+      - "18444"            
+    volumes:
+      - node2_data:/home/bitcoin/.bitcoin
+    networks:
+      sr_network:
+        ipv4_address: 172.20.0.6
+        aliases:
+          - ${BITCOIN_HOST_2}

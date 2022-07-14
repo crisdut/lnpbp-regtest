@@ -2,3 +2,5 @@
 logs
 *.psbt
 *.key
+
+/shared
