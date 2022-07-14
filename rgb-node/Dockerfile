@@ -49,7 +49,7 @@ WORKDIR $BUILDER_DIR
 # RUN git clone $SOURCE_CODE $BUILDER_SOURCE
 # RUN git checkout $VERSION
 # RUN cargo install --locked --all-features --path . --root ${BUILDER_DIR}
-RUN cargo install rgb_npode --version "=0.8.0-rc.1" \
+RUN cargo install rgb_node --version "=0.8.0-rc.1" \
         --locked --all-features --root "${BUILDER_DIR}"
 
 FROM rust:1.61.0-slim-buster as runtime

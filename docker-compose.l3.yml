@@ -71,15 +71,15 @@ services:
         ipv4_address: 172.20.0.18
 
   storm1:
-    container_name: store1
-    image: sr/store:latest
+    container_name: storm1
+    image: sr/storm:latest
     build:
-      context: ./stored-node/
+      context: ./storm-node/
     restart: unless-stopped
     volumes:
-      - store1_data:/var/lib/store
+      - storm1_data:/var/lib/storm
     ports:
-      - ${STORE_RPC_PORT}:${STORE_RPC_PORT}       
+      - ${STORM_RPC_PORT}:${STORM_RPC_PORT}       
     networks:
       sr_network:
         ipv4_address: 172.20.0.20

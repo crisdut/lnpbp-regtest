@@ -7,7 +7,7 @@ RUN apt-get update \
         libpq-dev libssl-dev libzmq3-dev libsqlite3-dev
 
 WORKDIR $BUILDER_DIR
-RUN cargo install storm_node --version "=0.8.0" \
+RUN cargo install storm_node --version "=0.8.0-beta.1" \
         --locked --all-features --root "${BUILDER_DIR}"
 
 FROM rust:1.61.0-slim-buster as runtime
@@ -37,7 +37,7 @@ COPY --from=builder --chown=${USER}:${USER} \
 
 VOLUME "$DATA_DIR"
 
-EXPOSE 60960 64964
+EXPOSE 64964
 
 ENTRYPOINT ["stormd"]
 
