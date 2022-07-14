@@ -20,11 +20,14 @@ services:
       - store1
     volumes:    
       - rgb1_data:/var/lib/rgb
-      - store1_data:/var/lib/store      
+      - store1_data:/var/lib/store     
+    ports:
+      - ${RGB_RPC_PORT}:${RGB_RPC_PORT} 
     networks:
       sr_network:
+        ipv4_address: 172.20.0.14
         aliases:
-          - ${RGB_HOST_1}
+          - ${RGB_HOST_1}   
 
   rgb2:
     container_name: rgb2
@@ -49,6 +52,7 @@ services:
       - store2_data:/var/lib/store      
     networks:
       sr_network:
+        ipv4_address: 172.20.0.16      
         aliases:
           - ${RGB_HOST_1}          
 
@@ -56,22 +60,26 @@ services:
     container_name: store1
     image: sr/store:latest
     build:
-      context: ./store-node/
+      context: ./stored-node/
     restart: unless-stopped
     volumes:
       - store1_data:/var/lib/store
+    ports:
+      - ${STORE_RPC_PORT}:${STORE_RPC_PORT}       
     networks:
       sr_network:
-        ipv4_address: 172.20.0.7
+        ipv4_address: 172.20.0.18
 
-  store2:
-    container_name: store2
+  storm1:
+    container_name: store1
     image: sr/store:latest
     build:
-      context: ./store-node/
+      context: ./stored-node/
     restart: unless-stopped
     volumes:
-      - store2_data:/var/lib/store
+      - store1_data:/var/lib/store
+    ports:
+      - ${STORE_RPC_PORT}:${STORE_RPC_PORT}       
     networks:
       sr_network:
-        ipv4_address: 172.20.0.8   
+        ipv4_address: 172.20.0.20

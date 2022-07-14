@@ -58,6 +58,7 @@ services:
       - node1_data:/home/bitcoin/.bitcoin
     networks:
       sr_network:
+        ipv4_address: 172.20.0.4
         aliases:
           - ${BITCOIN_HOST_1}
 
@@ -99,5 +100,6 @@ services:
       - node2_data:/home/bitcoin/.bitcoin
     networks:
       sr_network:
+        ipv4_address: 172.20.0.6
         aliases:
           - ${BITCOIN_HOST_2}

@@ -27,6 +27,7 @@ services:
       - ${ELECTRS_PORT}:${ELECTRS_PORT}
     networks:
       sr_network:
+        ipv4_address: 172.20.0.22
         aliases:
           - ${ELECTRS_HOST}
   

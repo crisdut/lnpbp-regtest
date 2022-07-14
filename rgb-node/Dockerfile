@@ -7,7 +7,7 @@ RUN apt-get update \
         libpq-dev libssl-dev libzmq3-dev libsqlite3-dev
 
 WORKDIR $BUILDER_DIR
-RUN cargo install rgb-std --version "=0.8.0-rc.2" \
+RUN cargo install rgb-std --version "=0.8.0" \
         --locked --all-features --root "${BUILDER_DIR}"
 
 FROM rust:1.61.0-slim-buster as builder
@@ -30,14 +30,14 @@ RUN apt-get update \
         libpq-dev libssl-dev libzmq3-dev libsqlite3-dev
 
 WORKDIR $BUILDER_DIR
-RUN cargo install rgb20 --version "=0.8.0-rc.2" \
+RUN cargo install rgb20 --version "=0.8.0-rc.3" \
         --locked --all-features --root "${BUILDER_DIR}"
 
 FROM rust:1.61.0-slim-buster as builder
-ARG SOURCE_CODE=https://github.com/crisdut/rgb-node.git
+# ARG SOURCE_CODE=https://github.com/crisdut/rgb-node.git
 ARG BUILDER_SOURCE=/opt/src/rgb
 ARG BUILDER_DIR=/srv/rgb
-ARG VERSION=d36e4ad
+# ARG VERSION=06fe71f
 
 RUN apt-get update \
     && apt-get -y install --no-install-recommends \
@@ -45,10 +45,12 @@ RUN apt-get update \
         libpq-dev libssl-dev libzmq3-dev libsqlite3-dev
 
 WORKDIR $BUILDER_DIR
-WORKDIR $BUILDER_SOURCE
-RUN git clone $SOURCE_CODE $BUILDER_SOURCE
-RUN git checkout $VERSION
-RUN cargo install --locked --all-features --path . --root ${BUILDER_DIR}
+# WORKDIR $BUILDER_SOURCE
+# RUN git clone $SOURCE_CODE $BUILDER_SOURCE
+# RUN git checkout $VERSION
+# RUN cargo install --locked --all-features --path . --root ${BUILDER_DIR}
+RUN cargo install rgb_npode --version "=0.8.0-rc.1" \
+        --locked --all-features --root "${BUILDER_DIR}"
 
 FROM rust:1.61.0-slim-buster as runtime
 ARG BUILDER_DIR=/srv/rgb

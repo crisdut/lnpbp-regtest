@@ -40,6 +40,9 @@ alias rgb02="docker-compose exec -T rgb2 rgb-cli -vvvv --network=regtest"
 alias fungible1="docker-compose exec -T rgb1 rgb20 --network=regtest"
 alias fungible2="docker-compose exec -T rgb2 rgb20 --network=regtest"
 
+alias rgbstd1="docker-compose exec -T rgb1 rgb"
+alias rgbstd2="docker-compose exec -T rgb2 rgb"
+
 
 # Update rust
 rustup component add rust-src --toolchain nightly
@@ -78,6 +81,11 @@ b01 -rpcwallet=alpha listunspent
 
 b02 -rpcwallet=beta listtransactions
 b02 -rpcwallet=beta listunspent
+
+# 6- Send coins (After create Taproot wallet)
+$tapaddr="tb1..."
+b01 sendtoaddress $tapaddr 0.00001
+b01 generatetoaddress 10 $(echo $addr1)
 ```
 
 ### _Running L2_
@@ -113,7 +121,7 @@ docker-compose up -d rgb1 rgb2
 
 ```bash
 # 1- Generate new issue
-txid='b3be691abc0b4df9053d440ff46375f121a4de367aac685f0c1f295669ab94b6' #example (psbt unspent)
+txid='8aa3e74100bbbd437c47c5c6e752cec0a5865e640457a3361c65eb31cfc7c7b2' #example (psbt unspent)
 vout='0' #example
 
 ticker="SRC"
@@ -126,7 +134,7 @@ fungible1 issue "$ticker" "$name" $allocation
 # Output=> $contract="rgbc1..."
 
 # 2- Sync Contract
-rgb01 register $contract
+rgb01 contract register $contract
 
 # 2- Prepare Consignment (State Transfer)
 unspent_txid='a32328468978cf09092e2b55525e3a9228a639032d9f569a650ddb57231ebfff' #example
@@ -139,7 +147,7 @@ rgb01 compose $contractID $unspent_txid:$unspent_vout /var/lib/rgb/consignment.r
 dest_txid='27349fc4a6bde9e8f6c7c69761d5a0f0ffa3f1cd9936a802b7bd4261bcb2b8ff' #example
 dest_vout='0' #example
 
-fungible1 blind $dest_txid:$dest_vout
+rgbstd1 blind $dest_txid:$dest_vout
 # Output=> txob15ujk37vftssl4eh0a2x72cce2d7q5rgwxjy68k2z4pxtm86r2v3snak74y (Seal Definition)
 # Output=> 16669351361466217679 (Blinding factor)
 

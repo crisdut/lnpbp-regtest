@@ -1,5 +1,5 @@
 FROM rust:1.61.0-slim-buster as builder
-ARG BUILDER_DIR=/srv/store
+ARG BUILDER_DIR=/srv/storm
 
 RUN apt-get update \
     && apt-get -y install --no-install-recommends \
@@ -7,15 +7,15 @@ RUN apt-get update \
         libpq-dev libssl-dev libzmq3-dev libsqlite3-dev
 
 WORKDIR $BUILDER_DIR
-RUN cargo install store_daemon --version "=0.8.0-beta.3" \
+RUN cargo install storm_node --version "=0.8.0" \
         --locked --all-features --root "${BUILDER_DIR}"
 
 FROM rust:1.61.0-slim-buster as runtime
 
-ARG BUILDER_DIR=/srv/store
+ARG BUILDER_DIR=/srv/storm
 ARG BIN_DIR=/usr/local/bin
-ARG DATA_DIR=/var/lib/store
-ARG USER=store
+ARG DATA_DIR=/var/lib/storm
+ARG USER=storm
 
 RUN apt-get update -y \
     && apt-get install -y \
@@ -39,6 +39,6 @@ VOLUME "$DATA_DIR"
 
 EXPOSE 60960 64964
 
-ENTRYPOINT ["stored"]
+ENTRYPOINT ["stormd"]
 
-CMD ["-vvvv", "--data-dir", "/var/lib/store"]
+CMD ["-vvvv", "--data-dir", "/var/lib/storm"]
