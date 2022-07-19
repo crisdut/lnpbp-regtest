@@ -52,6 +52,9 @@ WORKDIR $BUILDER_DIR
 RUN cargo install rgb_node --version "=0.8.0-rc.1" \
         --locked --all-features --root "${BUILDER_DIR}"
 
+RUN cargo install rgb-cli --version "=0.8.0-rc.1" \
+        --locked --all-features --root "${BUILDER_DIR}"
+
 FROM rust:1.61.0-slim-buster as runtime
 ARG BUILDER_DIR=/srv/rgb
 ARG BIN_DIR=/usr/local/bin
@@ -77,8 +80,6 @@ RUN apt-get update -y \
        libsqlite3-0 \
        libssl1.1 \
        telnetd \
-       netcat \
-#     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 WORKDIR "${BIN_DIR}"

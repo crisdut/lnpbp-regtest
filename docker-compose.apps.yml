@@ -1,8 +1,8 @@
 version: "2.4"
 volumes:
   electrs_data:
-  chat1_data:
-  file1_data:
+  storm1_data:
+  storm2_data:
 
 services:
   electrs:
@@ -33,31 +33,29 @@ services:
         aliases:
           - ${ELECTRS_HOST}
 
-  chat1:
-    container_name: chat1
+  storm1:
+    container_name: storm1
     image: sr/storm:latest
     build:
       context: ./storm-node/
-    restart: unless-stopped
+    # restart: unless-stopped
     command:
       [
         "-vvvv",
         "--data-dir=${STORM_DATA_DIR}",
         "--store-endpoint=${STORE_HOST_1}:${STORE_RPC_PORT}",
-        "--msg=${LNP_IP_1}:${LNP_RPC_PORT}",
-        "--chat",
+        "--msg=${LNP_IP_1}:${LNP_RPC_PORT}"
       ]
     depends_on:
       - lnp1
-      - store1
     volumes:
-      - chat1_data:/var/lib/storm
+      - storm1_data:/var/lib/storm
     networks:
       sr_network:
         ipv4_address: 172.20.0.20
 
-  file1:
-    container_name: file1
+  storm2:
+    container_name: storm2
     image: sr/storm:latest
     build:
       context: ./storm-node/
@@ -66,15 +64,14 @@ services:
       [
         "-vvvv",
         "--data-dir=${STORM_DATA_DIR}",
-        "--store-endpoint=${STORE_HOST_1}:${STORE_RPC_PORT}",
+        "--store-endpoint=${STORE_HOST_1}:${STORE_RPC_PORT}",        
         "--msg=${LNP_IP_1}:${LNP_RPC_PORT}",
         "--downpour",
       ]
     depends_on:
       - lnp1
-      - store1
     volumes:
-      - file1_data:/var/lib/storm
+      - storm2_data:/var/lib/storm
     networks:
       sr_network:
         ipv4_address: 172.20.0.24

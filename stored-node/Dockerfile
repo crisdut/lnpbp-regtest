@@ -7,7 +7,7 @@ RUN apt-get update \
         libpq-dev libssl-dev libzmq3-dev libsqlite3-dev
 
 WORKDIR $BUILDER_DIR
-RUN cargo install store_daemon --version "=0.8.0-rc.5" \
+RUN cargo install store_daemon --version "=0.8.0" \
         --locked --all-features --root "${BUILDER_DIR}"
 
 FROM rust:1.61.0-slim-buster as runtime

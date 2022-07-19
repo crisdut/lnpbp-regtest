@@ -89,9 +89,14 @@ b01 -rpcwallet=alpha listunspent
 b02 -rpcwallet=beta listtransactions
 b02 -rpcwallet=beta listunspent
 
-# 6- Send coins (After create Taproot wallet)
-$tapaddr="tb1..."
-b01 sendtoaddress $tapaddr 0.00001
+# 6- Send coins to Issue Address (After create Taproot wallet)
+$issueaddr="tb1..."
+b01 sendtoaddress $issueaddr 0.0001
+b01 generatetoaddress 10 $(echo $addr1)
+
+# 7- Send coins to change Address (After create Taproot wallet)
+$changeaddr="tb1..."
+b01 sendtoaddress $changeaddr 0.00001
 b01 generatetoaddress 10 $(echo $addr1)
 ```
 
@@ -122,51 +127,65 @@ lnp01 connect `$pb@$lnp2_ip:$lnp2_port`
 # 1- Up and running nodes
 docker-compose up -d store1 store2
 docker-compose up -d rgb1 rgb2 
+docker-compose up -d storm1 storm2
 ```
 
 ### _Create Issue_
 
 ```bash
-# 1- Generate new issue
-txid='8aa3e74100bbbd437c47c5c6e752cec0a5865e640457a3361c65eb31cfc7c7b2' #example (psbt unspent)
-vout='0' #example
+# 1- Generate
+txid='...' #example (issuer transaction)
+vout='...' #example (issuer vout)
 
 ticker="SRC"
 name="Satoshi Racer Coin"
 amount="100"
 allocation="$amount@$txid:$vout"
 
-fungible1 issue "$ticker" "$name" $allocation
+fungible1 issue "$ticker" "$name" "$allocation"
 # Output=> $contractID="rgb1..."
 # Output=> $contract="rgbc1..."
 
 # 2- Sync Contract
 rgb01 contract register $contract
 
-# 2- Prepare Consignment (State Transfer)
-unspent_txid='a32328468978cf09092e2b55525e3a9228a639032d9f569a650ddb57231ebfff' #example
-unspent_vout='0' #example
-
-rgb01 compose $contractID $unspent_txid:$unspent_vout /var/lib/rgb/consignment.rgb
-# docker cp [DOCKER_CONTAINER_ID]:/var/lib/rgb/consignment.rgb ./shared/ <--- for docker noobs =)
-
 # 3- Create Blind UTXO
-dest_txid='27349fc4a6bde9e8f6c7c69761d5a0f0ffa3f1cd9936a802b7bd4261bcb2b8ff' #example
-dest_vout='0' #example
+rgbstd1 blind $txid:$vout
+seal_definition="txob..."
+blind_factor="..."
+```
 
-rgbstd1 blind $dest_txid:$dest_vout
-# Output=> txob15ujk37vftssl4eh0a2x72cce2d7q5rgwxjy68k2z4pxtm86r2v3snak74y (Seal Definition)
-# Output=> 16669351361466217679 (Blinding factor)
+### _Create and Send Consignment_
+```bash
+# 1- Prepare Consignment (State Transfer)
+rgb01 transfer compose $contractID $txid:$vout /var/lib/rgb/consignment.rgb
+rgbstd1 consignment validate /var/lib/rgb/consignment.rgb
 
-# 4- Prepare to Transfer
-atomic_value=$amount
-transfer_value="$atomic_value@$seal_definition"
-fungible1 transfer --utxo "$txid:$vout" /var/lib/rgb/consignment.rgb $transfer_value /var/lib/rgb/transfer.rgb
+# 2- Prepare to Transfer
+unspent_txid='...' #example (change transaction)
+unspent_vout='...' #example (change vout)
 
-# 5- Transfer Asset (After Create PSBT)
-rgb01 transfer $contractID /var/lib/rgb/transfer.rgb /var/lib/rgb/psbt.rgb 
+atomic_value=90
+transfer_value="$atomic_value@tapret1st:$unspent_txid:$unspent_vout"
 
-# 6- Confirm Transfer
+fungible1 transfer --utxo "$txid:$vout" --change $transfer_value /var/lib/rgb/consignment.rgb \
+          "10@$seal_definition" /var/lib/rgb/transfer.rgb
+
+# 3- Transfer Asset (After Create PSBT**)
+# docker cp ./shared/psbt.rgb [DOCKER_CONTAINER_ID]:/var/lib/rgb/psbt.rgb  <--- for docker noobs =)
+rgb01 contract embed $contractID /var/lib/rgb/psbt.rgb 
+rgb01 transfer combine $contractID /var/lib/rgb/transfer.rgb /var/lib/rgb/psbt.rgb  "$txid:$vout" 
+
+# 4- Check PSBT Transfer
+rgbstd1 psbt bundle /var/lib/rgb/psbt.rgb
+rgbstd1 psbt analyze /var/lib/rgb/psbt.rgb
+
+# 5- Make a Transfer
+rgb01 transfer finalize --endseal $seal_definition /var/lib/rgb/psbt.rgb /var/lib/rgb/consignment.rgb
+rgbstd1 consignment validate /var/lib/rgb/consignment.rgb
+
+# 6- Check Transfer (After Sign PSBT**)
+rgbstd1 consignment validate /var/lib/rgb/consignment.rgb
 ```
 
 ### _Bonus: Create PSBT_
@@ -188,11 +207,23 @@ btc-cold create ./tr.wd ./tr.wallet
 btc-cold address ./tr.wallet
 addr_dw="tb1p..."
 
-# 6- Transfer and Mine
-b01 -rpcwallet=alpha sendtoaddress $addr_dw 100
-b01 -rpcwallet=alpha generatetoaddress 500 $(echo $addr1)
-
-# 6- Construct PSBT (Retrieve UTXO)
+# 5- Construct PSBT (Retrieve UTXO)
+fee=100
 btc-cold check tr.wallet -e $electrum_host -p $electrum_port
-btc-cold construct ./tr.wallet ./psbt.rgb 1000 --input "$txid:$vout /0/0 rbf" -e $electrum_host -p $electrum_port
+btc-cold construct --input "$txid:$vout /0/0" ./tr.wallet ./psbt.rgb -e $electrum_host -p $electrum_port
+```
+
+### _Bonus2: Sign PSBT_
+
+```bash
+# 1- Create Anchor
+# docker cp [DOCKER_CONTAINER_ID]:/var/lib/rgb/psbt.rgb ./shared/psbt.final   <--- for docker noobs =)
+dbc commit ./shared/psbt.final
+
+# 2- Sign PSBT
+btc-hot sign ./shared/psbt.final ./tr.derive
+
+# 4- Finalize
+btc-cold finalize --publish regtest ./shared/psbt.final -e $electrum_host -p $electrum_port
+
 ```
