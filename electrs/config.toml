@@ -1,2 +1,3 @@
 auth = "bitcoin:bitcoin"
 verbosity = 4
+log_filters = "DEBUG"
