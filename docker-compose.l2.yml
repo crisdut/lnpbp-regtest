@@ -20,7 +20,6 @@ services:
         "--data-dir=/var/lib/lnp"
       ]
     depends_on:
-      - node1
       - electrs
     volumes:
       - lnp1_data:/var/lib/lnp
@@ -46,7 +45,6 @@ services:
         "--data-dir=/var/lib/lnp"
       ]
     depends_on:
-      - node2
       - electrs
     volumes:
       - lnp2_data:/var/lib/lnp

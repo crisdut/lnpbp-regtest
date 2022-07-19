@@ -25,8 +25,8 @@ source .env
 alias b01="docker-compose exec -T node1 bitcoin-cli -chain=regtest -rpcconnect=localhost -rpcport=${BITCOIN_RPC_PORT} -rpcuser=${BITCOIN_RPC_USER} -rpcpassword=${BITCOIN_RPC_PASSWORD}"
 alias b02="docker-compose exec -T node2 bitcoin-cli -chain=regtest -rpcconnect=localhost -rpcport=${BITCOIN_RPC_PORT} -rpcuser=${BITCOIN_RPC_USER} -rpcpassword=${BITCOIN_RPC_PASSWORD}"
 
-alias lnpd1="docker-compose run --rm lnp1 --network=regtest -vvvv --data-dir=${LNP_DATA_DIR} --electrum-server=${ELECTRS_IP} --electrum-port=${ELECTRS_PORT}"
-alias lnpd2="docker-compose run --rm lnp2 --network=regtest -vvvv --data-dir=${LNP_DATA_DIR} --electrum-server=${ELECTRS_IP} --electrum-port=${ELECTRS_PORT}"
+alias lnpd1="docker-compose run --rm lnp1 --network=regtest -vvvv --data-dir=${LNP_DATA_DIR} --electrum-server=${ELECTRS_HOST} --electrum-port=${ELECTRS_PORT}"
+alias lnpd2="docker-compose run --rm lnp2 --network=regtest -vvvv --data-dir=${LNP_DATA_DIR} --electrum-server=${ELECTRS_HOST} --electrum-port=${ELECTRS_PORT}"
 
 alias lnp01="docker-compose exec -T lnp1 lnp-cli -vvvv"
 alias lnp02="docker-compose exec -T lnp2 lnp-cli -vvvv"
@@ -85,14 +85,19 @@ b01 -rpcwallet=alpha listunspent
 b02 -rpcwallet=beta listtransactions
 b02 -rpcwallet=beta listunspent
 
-# 6- Send coins to Issue Address (After create Taproot wallet)
+# 6- Send coins to Issue Address (After Create Wallets**)
 $issueaddr="tb1..."
 b01 sendtoaddress $issueaddr 0.001
 b01 generatetoaddress 10 $(echo $addr1)
 
-# 7- Send coins to change Address (After create Taproot wallet)
+# 7- Send coins to change Address (After Create Wallets**)
 $changeaddr="tb1..."
-b01 sendtoaddress $changeaddr 0.00001
+b01 sendtoaddress $changeaddr 0.001
+b01 generatetoaddress 10 $(echo $addr1)
+
+# 8- Send coins to Receive Address (After Create Wallets**)
+$receiveaddr="tb1..."
+b01 sendtoaddress $receiveaddr 0.0001
 b01 generatetoaddress 10 $(echo $addr1)
 ```
 
@@ -100,7 +105,7 @@ b01 generatetoaddress 10 $(echo $addr1)
 
 ```bash
 # 1- Generate funding wallet
-lnpd1 init # tprv8fRNBaNZGS76x6KDSVKL3FyT6kL5TPEG9m27xNq1e2Fgo3AaWwJsu7vac8uH5BMUtbeFbob7TuMaQYSFQT8AFAjoAPDyvKLmcWoX3KLDR6y
+lnpd1 init # tprv8gD6szk1Vr8Bm3dY4wpxodYwkZihHM8XLWypXiUTcuQamaMwUHKDoJZJfjY3kCCzRe9PUmeWz3UtQtPJnbJsykoarXpQrgNqu2vXUcydtR2
 lnpd2 init # tprv8ZgxMBicQKsPdXjTY8BuF4WPhEhfGELSMiZM1XfLNcR2hka3wTKPqakbpMDHedYaRBJwPBeADqRnGPNHGCuqk9FUVmj5fJrzvbnoQPoTTTN
 
 # 2- Up and running nodes
@@ -137,7 +142,7 @@ vout='...' #example (issuer vout)
 
 ticker="SRC"
 name="Satoshi Racer Coin"
-amount="100"
+amount="1000"
 allocation="$amount@$txid:$vout"
 
 fungible1 issue "$ticker" "$name" "$allocation"
@@ -148,10 +153,10 @@ fungible1 issue "$ticker" "$name" "$allocation"
 rgb01 contract register $contract
 
 # 3- Create Blind UTXO
-unspent_txid='...' #example (change transaction)
-unspent_vout='...' #example (change vout)
+receive_txid='...' #example (receive address transaction)
+receive_vout='...' #example (receive address vout)
 
-rgbstd1 blind $unspent_txid:$unspent_vout
+rgbstd1 blind $receive_txid:$receive_vout
 seal_definition="txob..."
 blind_factor="..."
 ```
@@ -159,69 +164,87 @@ blind_factor="..."
 ### _Create and Send Consignment_
 ```bash
 # 1- Prepare Consignment (State Transfer)
-rgb01 transfer compose $contractID $txid:$vout /var/lib/rgb/consignment.rgb
-rgbstd1 consignment validate /var/lib/rgb/consignment.rgb
+rgb01 transfer compose $contractID $txid:$vout /var/lib/rgb/fungible.rgbc
+rgbstd1 consignment validate /var/lib/rgb/fungible.rgbc
 
-# 2- Prepare to Transfer
-atomic_value=90
-transfer_value="$atomic_value@tapret1st:$unspent_txid:$unspent_vout"
+# 2- Prepare to Transfer Change
+change_txid='...' #example (change address transaction)
+change_vout='...' #example (change address vout)
 
-fungible1 transfer --utxo "$txid:$vout" --change $transfer_value /var/lib/rgb/consignment.rgb \
-          "10@$seal_definition" /var/lib/rgb/transfer.rgb
+atomic_value=990
+transfer_value="$atomic_value@tapret1st:$change_txid:$change_vout"
+
+fungible1 transfer --utxo "$txid:$vout" --change $transfer_value /var/lib/rgb/fungible.rgbc \
+          "10@$seal_definition" /var/lib/rgb/fungible.rgbt
 
 # 3- Transfer Asset (After Create PSBT**)
-# docker cp ./shared/psbt.rgb [DOCKER_CONTAINER_ID]:/var/lib/rgb/  <--- for docker noobs =)
-rgb01 contract embed $contractID /var/lib/rgb/psbt.rgb 
-rgb01 transfer combine $contractID /var/lib/rgb/transfer.rgb /var/lib/rgb/psbt.rgb  "$txid:$vout" 
+# docker cp ./shared/fungible.psbt [DOCKER_CONTAINER_ID]:/var/lib/rgb/  <--- for docker noobs =)
+rgb01 contract embed $contractID /var/lib/rgb/fungible.psbt
+rgb01 transfer combine $contractID /var/lib/rgb/fungible.rgbt /var/lib/rgb/fungible.psbt  "$txid:$vout" 
 
 # 4- Check PSBT Transfer
-rgbstd1 psbt bundle /var/lib/rgb/psbt.rgb
-rgbstd1 psbt analyze /var/lib/rgb/psbt.rgb
+rgbstd1 psbt bundle /var/lib/rgb/fungible.psbt
+rgbstd1 psbt analyze /var/lib/rgb/fungible.psbt
 
 # 5- Make a Transfer
-rgb01 transfer finalize --endseal $seal_definition /var/lib/rgb/psbt.rgb /var/lib/rgb/consignment.rgb --send "$pb@$lnp1_ip:$lnp1_port"
-rgbstd1 consignment validate /var/lib/rgb/consignment.rgb
+rgb01 transfer finalize --endseal $seal_definition /var/lib/rgb/fungible.psbt /var/lib/rgb/fungible.rgbc --send "$pb@$lnp1_ip:$lnp1_port"
+rgbstd1 consignment validate /var/lib/rgb/fungible.rgbc
 
 # 6- Check Transfer (After Sign PSBT**)
-rgbstd1 consignment validate /var/lib/rgb/consignment.rgb
+rgbstd1 consignment validate /var/lib/rgb/fungible.rgbc
+```
+
+### _Bonus: Create Wallets_
+
+```bash
+# 1- Generate seed and private key
+btc-hot seed -P ./regtest.seed
+btc-hot seed -P ./regtest.seed2
+
+# 2- Save Wallet Descriptors
+btc-hot derive --regtest --scheme bip86 -P ./regtest.seed ./regtest.tr
+btc-hot derive --regtest --scheme bip86 -P ./regtest.seed2 ./regtest.tr2
+
+wl="tr(m=[..."
+wl2="tr(m=[..."
+
+echo $wl > ./regtest.desc
+echo $wl2 > ./regtest.desc2
+
+# 3- Generate Wallets
+btc-cold create ./regtest.desc ./regtest.wallet -e $electrum_host -p $electrum_port
+btc-cold create ./regtest.desc2 ./regtest.wallet2 -e $electrum_host -p $electrum_port
+
+# 4- Get Issue and Change Address
+btc-cold address ./regtest.wallet  -e $electrum_host -p $electrum_port
+issueaddr="tb1p..."
+changeaddr="tb1p..."
+
+# 5- Get Receive Address
+btc-cold address ./regtest.wallet2  -e $electrum_host -p $electrum_port
+receiveaddr="tb1p..."
 ```
 
 ### _Bonus: Create PSBT_
 
 ```bash
-# 1- Generate seed and private key
-btc-hot seed -P ./tr.seed
-
-# 2- Save Wallet Descriptor
-btc-hot derive --testnet --scheme bip86 -P ./tr.seed ./tr.derive
-wl="tr(m=[..."
-
-echo $wl > ./tr.wd
-
-# 4- Generate Wallet
-btc-cold create ./tr.wd ./tr.wallet -e $electrum_host -p $electrum_port
-
-# 5- Get Address
-btc-cold address ./tr.wallet  -e $electrum_host -p $electrum_port
-addr_dw="tb1p..."
-
-# 5- Construct PSBT (Retrieve UTXO)
-fee=100
-btc-cold check tr.wallet -e $electrum_host -p $electrum_port
-btc-cold construct --input "$txid:$vout /0/0" --allow-tapret-path 1 ./tr.wallet ./psbt.rgb -e $electrum_host -p $electrum_port $fee
+# 1- Construct PSBT (Retrieve UTXO)
+fee=500
+btc-cold check regtest.wallet -e $electrum_host -p $electrum_port
+btc-cold construct --input "$txid:$vout /0/0" --allow-tapret-path 1 ./regtest.wallet ./fungible.psbt -e $electrum_host -p $electrum_port $fee
 ```
 
-### _Bonus2: Sign PSBT_
+### _Bonus: Sign PSBT_
 
 ```bash
 # 1- Create Anchor
-# docker cp [DOCKER_CONTAINER_ID]:/var/lib/rgb/psbt.rgb ./shared/psbt.rgbt    <--- for docker noobs =)
-dbc commit ./shared/psbt.rgbt ./shared/psbt.final
+# docker cp [DOCKER_CONTAINER_ID]:/var/lib/rgb/fungible.psbt ./shared/fungible.out    <--- for docker noobs =)
+dbc commit ./shared/fungible.out
 
 # 2- Sign PSBT
-btc-hot sign ./shared/psbt.final ./tr.derive
+btc-hot sign ./shared/fungible.out ./regtest.tr
 
-# 4- Finalize
-btc-cold finalize --publish regtest ./shared/psbt.final -e $electrum_host -p $electrum_port
+# 3- Finalize
+btc-cold finalize --publish regtest ./fungible.out -e $electrum_host -p $electrum_port
 
 ```
