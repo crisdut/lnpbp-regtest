@@ -1,10 +1,8 @@
 FROM rust:1.61.0-slim-buster as builder
 ARG BUILDER_DIR=/srv/bp
 
-RUN apt-get update \
-    && apt-get -y install --no-install-recommends build-essential
+RUN apt-get update && apt-get install -y build-essential
         
-
 WORKDIR $BUILDER_DIR
 RUN cargo install bp_node --version "=0.8.0-alpha.2" \
         --locked --all-features --root "${BUILDER_DIR}"

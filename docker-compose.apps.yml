@@ -1,8 +1,7 @@
-version: "2.4"
+version: '3.7'
 volumes:
   electrs_data:
   storm1_data:
-  storm2_data:
 
 services:
   electrs:
@@ -13,10 +12,9 @@ services:
     restart: unless-stopped
     command:
       [
-        "electrs",
         "--timestamp",
         "--network=regtest",
-        "--db-dir=/home/electrs/db",
+        "--db-dir=/var/lib/electrs/db",
         "--electrum-rpc-addr=0.0.0.0:${ELECTRS_PORT}",
         "--daemon-p2p-addr=node1:${BITCOIN_PORT}",
         "--daemon-rpc-addr=node1:${BITCOIN_RPC_PORT}",

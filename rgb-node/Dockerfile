@@ -1,54 +1,15 @@
-FROM rust:1.61.0-slim-buster as builderstd
+FROM rust:1.61.0-slim-buster as builder
 ARG BUILDER_DIR=/srv/rgb
 
-RUN apt-get update \
-    && apt-get -y install --no-install-recommends \
-        wget build-essential cmake git pkg-config \
-        libpq-dev libssl-dev libzmq3-dev libsqlite3-dev
+RUN apt-get update && apt-get install -y build-essential
 
 WORKDIR $BUILDER_DIR
 RUN cargo install rgb-std --version "=0.8.0" \
         --locked --all-features --root "${BUILDER_DIR}"
 
-FROM rust:1.61.0-slim-buster as builder
-ARG SOURCE_CODE=https://github.com/crisdut/rgb-node.git
-ARG BUILDER_SOURCE=/opt/src/rgb
-ARG BUILDER_DIR=/srv/rgb
-ARG VERSION=d36e4ad
-
-RUN apt-get update \
-    && apt-get -y install --no-install-recommends \
-        wget build-essential cmake git pkg-config \
-        libpq-dev libssl-dev libzmq3-dev libsqlite3-dev
-
-FROM rust:1.61.0-slim-buster as builder20
-ARG BUILDER_DIR=/srv/rgb
-
-RUN apt-get update \
-    && apt-get -y install --no-install-recommends \
-        wget build-essential cmake git pkg-config \
-        libpq-dev libssl-dev libzmq3-dev libsqlite3-dev
-
-WORKDIR $BUILDER_DIR
 RUN cargo install rgb20 --version "=0.8.0-rc.3" \
         --locked --all-features --root "${BUILDER_DIR}"
 
-FROM rust:1.61.0-slim-buster as builder
-# ARG SOURCE_CODE=https://github.com/crisdut/rgb-node.git
-ARG BUILDER_SOURCE=/opt/src/rgb
-ARG BUILDER_DIR=/srv/rgb
-# ARG VERSION=06fe71f
-
-RUN apt-get update \
-    && apt-get -y install --no-install-recommends \
-        wget build-essential cmake git pkg-config \
-        libpq-dev libssl-dev libzmq3-dev libsqlite3-dev
-
-WORKDIR $BUILDER_DIR
-# WORKDIR $BUILDER_SOURCE
-# RUN git clone $SOURCE_CODE $BUILDER_SOURCE
-# RUN git checkout $VERSION
-# RUN cargo install --locked --all-features --path . --root ${BUILDER_DIR}
 RUN cargo install rgb_node --version "=0.8.0-rc.1" \
         --locked --all-features --root "${BUILDER_DIR}"
 
@@ -64,22 +25,10 @@ ARG USER=rgbd
 RUN adduser --home "${DATA_DIR}" --shell /bin/bash --disabled-login \
         --gecos "${USER} user" ${USER}
 
-COPY --from=builderstd --chown=${USER}:${USER} \
-     "${BUILDER_DIR}/bin/" "${BIN_DIR}/"
-
-COPY --from=builder20 --chown=${USER}:${USER} \
-     "${BUILDER_DIR}/bin/" "${BIN_DIR}/"
-
 COPY --from=builder --chown=${USER}:${USER} \
      "${BUILDER_DIR}/bin/" "${BIN_DIR}/"
 
 RUN apt-get update -y \
-    && apt-get install -y \
-       libzmq3-dev \
-       iputils-ping \
-       libsqlite3-0 \
-       libssl1.1 \
-       telnetd \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 WORKDIR "${BIN_DIR}"

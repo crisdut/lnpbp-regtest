@@ -1,36 +1,32 @@
-FROM rust:1.61.0-alpine3.14 as builder
-ARG BUILDER_DIR=/srv/electrs
+FROM debian:bullseye-slim as builder
+ENV BUILDER_DIR=/srv/electrs
 
-RUN apk add --no-cache \
-  alpine-sdk \
-  build-base \
-  linux-headers \
-  clang \
-  cmake \
-  snappy-dev 
+RUN apt-get update -qqy
+RUN apt-get install -qqy librocksdb-dev=6.11.4-3 curl build-essential cargo clang cmake
 
 WORKDIR $BUILDER_DIR
-
-ARG ELECTRS_VERSION=0.9.0
-RUN rustup override set 1.61 \
-  && RUSTFLAGS="-C target-feature=-crt-static" \
+RUN RUSTFLAGS="-C target-feature=-crt-static" \
   cargo install electrs --version "=0.9.8" --locked --all-features --root "${BUILDER_DIR}"
 
-
 # Build stage for compiled artifacts
-FROM alpine:3.14
+FROM debian:bullseye-slim as runtime
 ENV BUILDER_DIR=/srv/electrs
+ARG DATA_DIR=/var/lib/electrs
 ENV BIN_DIR=/usr/local/bin
 ARG USER=electrs
 
-RUN adduser -S "${USER}"
-RUN apk add --no-cache --update libstdc++
+RUN apt-get update -qqy
+RUN apt-get install -qqy librocksdb-dev=6.11.4-3 curl \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN adduser --home "${DATA_DIR}" --shell /bin/bash --disabled-login \
+            --gecos "${USER} user" ${USER}
 
 COPY --from=builder --chown=${USER}:${USER} \
      "${BUILDER_DIR}/bin/" "${BIN_DIR}"
 
+USER ${USER}
 WORKDIR ${BIN_DIR}
 COPY ./config.toml /etc/electrs/config.toml
 
-USER ${USER}
-CMD ["electrs"]
+ENTRYPOINT ["electrs"]

@@ -1,4 +1,4 @@
-version: "3"
+version: "3.7"
 
 networks:
   sr_network:
@@ -6,7 +6,7 @@ networks:
     ipam:
       config:
         - subnet: 172.20.0.0/24
-          gateway: 172.20.0.1    
+          gateway: 172.20.0.1
 
 volumes:
   node1_data:
@@ -36,7 +36,7 @@ services:
         "-rpcallowip=0.0.0.0/0",
         "-rpcbind=127.0.0.1",
         "-rpcbind=${BITCOIN_HOST_1}",
-        "-connect=${BITCOIN_HOST_2}:${BITCOIN_PORT}",        
+        "-connect=${BITCOIN_HOST_2}:${BITCOIN_PORT}",
         "-zmqpubrawtx=tcp://0.0.0.0:${BITCOIN_ZMQ_TX_PORT}",
         "-zmqpubhashtx=tcp://0.0.0.0:${BITCOIN_ZMQ_TX_PORT}",
         "-zmqpubrawblock=tcp://0.0.0.0:${BITCOIN_ZMQ_BLOCK_PORT}",
@@ -45,8 +45,8 @@ services:
     ports:
       - "18400:18443"
       - "18500:18444"
-    expose: 
-      - "18444"            
+    expose:
+      - "18444"
     volumes:
       - node1_data:/home/bitcoin/.bitcoin
     networks:
@@ -78,7 +78,7 @@ services:
         "-rpcallowip=0.0.0.0/0",
         "-rpcbind=127.0.0.1",
         "-rpcbind=${BITCOIN_HOST_2}",
-        "-connect=${BITCOIN_HOST_1}:${BITCOIN_PORT}",                
+        "-connect=${BITCOIN_HOST_1}:${BITCOIN_PORT}",
         "-zmqpubrawtx=tcp://0.0.0.0:${BITCOIN_ZMQ_TX_PORT}",
         "-zmqpubhashtx=tcp://0.0.0.0:${BITCOIN_ZMQ_TX_PORT}",
         "-zmqpubrawblock=tcp://0.0.0.0:${BITCOIN_ZMQ_BLOCK_PORT}",
@@ -87,8 +87,8 @@ services:
     ports:
       - "18401:18443"
       - "18501:18444"
-    expose: 
-      - "18444"            
+    expose:
+      - "18444"
     volumes:
       - node2_data:/home/bitcoin/.bitcoin
     networks:

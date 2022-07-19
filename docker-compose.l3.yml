@@ -1,4 +1,4 @@
-version: "2.4"
+version: "3.7"
 volumes:
   rgb1_data:
   rgb2_data:
@@ -21,7 +21,7 @@ services:
         "--electrum-port=${ELECTRS_PORT}",
         "--store=${STORE_HOST_1}:${STORE_RPC_PORT}",
         "--storm=${STORM_HOST_1}:${STORM_RPC_PORT}",
-        "--threaded"
+        "--threaded",
       ]
     depends_on:
       - electrs

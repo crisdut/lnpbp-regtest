@@ -1,4 +1,4 @@
-version: "2.4"
+version: "3.7"
 volumes:
   cln1_data:
   lnp1_data:
@@ -17,13 +17,13 @@ services:
         "--chain=regtest",
         "--electrum-port=${ELECTRS_PORT}",
         "--electrum-server=${ELECTRS_HOST}",
-        "--data-dir=/var/lib/lnp"
+        "--data-dir=/var/lib/lnp",
       ]
     depends_on:
       - electrs
     volumes:
       - lnp1_data:/var/lib/lnp
-    expose: [9735, 62962]      
+    expose: [9735, 62962]
     networks:
       sr_network:
         ipv4_address: 172.20.0.8
@@ -42,7 +42,7 @@ services:
         "--chain=regtest",
         "--electrum-port=${ELECTRS_PORT}",
         "--electrum-server=${ELECTRS_HOST}",
-        "--data-dir=/var/lib/lnp"
+        "--data-dir=/var/lib/lnp",
       ]
     depends_on:
       - electrs
