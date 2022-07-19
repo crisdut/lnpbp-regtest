@@ -20,13 +20,14 @@ services:
         "--electrum-server=${ELECTRS_HOST}",
         "--electrum-port=${ELECTRS_PORT}",
         "--store=${STORE_HOST_1}:${STORE_RPC_PORT}",
+        "--storm=${STORM_HOST_1}:${STORM_RPC_PORT}",
       ]
     depends_on:
       - electrs
       - store1
+      - storm1
     volumes:
       - rgb1_data:/var/lib/rgb
-      - store1_data:/var/lib/store
     ports:
       - ${RGB_RPC_PORT}:${RGB_RPC_PORT}
     networks:
@@ -48,14 +49,14 @@ services:
         "--data-dir=${RGB_DATA_DIR}",
         "--electrum-server=${ELECTRS_HOST}",
         "--electrum-port=${ELECTRS_PORT}",
-        "--store=${STORE_HOST_2}:${STORE_RPC_PORT}",
+        "--store=${STORE_HOST_1}:${STORE_RPC_PORT}",
+        "--storm=${STORM_HOST_1}:${STORM_RPC_PORT}",
       ]
     depends_on:
       - electrs
       - store1
     volumes:
       - rgb2_data:/var/lib/rgb
-      - store2_data:/var/lib/store
     networks:
       sr_network:
         ipv4_address: 172.20.0.16
@@ -68,8 +69,15 @@ services:
     build:
       context: ./stored-node/
     restart: unless-stopped
+    command:
+      [
+        "-vvvv",
+        "--data-dir=/var/lib/store",
+        "--rpc=${STORE_HOST_1}:${STORE_RPC_PORT}",
+      ]    
     volumes:
       - store1_data:/var/lib/store
+      - ./shared/storm-stored:/var/lib/store
     ports:
       - ${STORE_RPC_PORT}:${STORE_RPC_PORT}
     networks:

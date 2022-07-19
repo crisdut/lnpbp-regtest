@@ -24,6 +24,9 @@ WORKDIR $BUILDER_DIR
 RUN cargo install lnp_node --version "=0.8.0" \
         --locked --all-features --root "${BUILDER_DIR}"
 
+RUN cargo install lnp-cli --version "=0.8.0" \
+        --locked --all-features --root "${BUILDER_DIR}"        
+
 # Runtime
 FROM rust:1.61.0-slim-buster as runtime
 

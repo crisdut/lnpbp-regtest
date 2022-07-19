@@ -38,40 +38,21 @@ services:
     image: sr/storm:latest
     build:
       context: ./storm-node/
-    # restart: unless-stopped
     command:
       [
         "-vvvv",
         "--data-dir=${STORM_DATA_DIR}",
-        "--store-endpoint=${STORE_HOST_1}:${STORE_RPC_PORT}",
-        "--msg=${LNP_IP_1}:${LNP_RPC_PORT}"
-      ]
-    depends_on:
-      - lnp1
-    volumes:
-      - storm1_data:/var/lib/storm
-    networks:
-      sr_network:
-        ipv4_address: 172.20.0.20
-
-  storm2:
-    container_name: storm2
-    image: sr/storm:latest
-    build:
-      context: ./storm-node/
-    restart: unless-stopped
-    command:
-      [
-        "-vvvv",
-        "--data-dir=${STORM_DATA_DIR}",
-        "--store-endpoint=${STORE_HOST_1}:${STORE_RPC_PORT}",        
+        "--store-endpoint=${STORE_DATA_DIR}",
         "--msg=${LNP_IP_1}:${LNP_RPC_PORT}",
+        "--chat",
         "--downpour",
       ]
     depends_on:
       - lnp1
+      - store1
     volumes:
-      - storm2_data:/var/lib/storm
+      - storm1_data:/var/lib/storm
+      - ./shared/storm-stored:/var/lib/store 
     networks:
       sr_network:
-        ipv4_address: 172.20.0.24
+        ipv4_address: 172.20.0.20
