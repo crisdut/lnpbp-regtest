@@ -100,21 +100,23 @@ b01 generatetoaddress 10 $(echo $addr1)
 
 ```bash
 # 1- Generate funding wallet
-lnpd1 init # tprv8fnbAPr3gZK7NKcSk3nbUiPuRmV4G1CE2B8ArUhYAVqTn2por8fnUhZgr95BJPTE59i4dYtYeDM5Z7ULiZ4ebUZbTGpgs7zkcLcQVUVxeaA
+lnpd1 init # tprv8fRNBaNZGS76x6KDSVKL3FyT6kL5TPEG9m27xNq1e2Fgo3AaWwJsu7vac8uH5BMUtbeFbob7TuMaQYSFQT8AFAjoAPDyvKLmcWoX3KLDR6y
 lnpd2 init # tprv8ZgxMBicQKsPdXjTY8BuF4WPhEhfGELSMiZM1XfLNcR2hka3wTKPqakbpMDHedYaRBJwPBeADqRnGPNHGCuqk9FUVmj5fJrzvbnoQPoTTTN
 
 # 2- Up and running nodes
 docker-compose up -d lnp1 lnp2
 
 # 3- Connect nodes
-lnp2_ip='172.20.0.11'   # example
+lnp1_ip='172.20.0.8'   # example
+lnp1_port='9735'        # example
+lnp2_ip='172.20.0.10'   # example
 lnp2_port='9735'        # example
 
 lnp01 listen # or set --listen parameters on initalization of the node
 lnp02 listen # or set --listen parameters on initalization of the node
 
 lnp02 info # get public key
-lnp01 connect `$pb@$lnp2_ip:$lnp2_port` 
+lnp01 connect "$pb@$lnp2_ip:$lnp2_port"
 
 ```
 ### _Running L3_ 
@@ -177,7 +179,7 @@ rgbstd1 psbt bundle /var/lib/rgb/psbt.rgb
 rgbstd1 psbt analyze /var/lib/rgb/psbt.rgb
 
 # 5- Make a Transfer
-rgb01 transfer finalize --endseal $seal_definition /var/lib/rgb/psbt.rgb /var/lib/rgb/consignment.rgb --send `$pb@$lnp1_ip:$lnp1_port`
+rgb01 transfer finalize --endseal $seal_definition /var/lib/rgb/psbt.rgb /var/lib/rgb/consignment.rgb --send "$pb@$lnp1_ip:$lnp1_port"
 rgbstd1 consignment validate /var/lib/rgb/consignment.rgb
 
 # 6- Check Transfer (After Sign PSBT**)
@@ -206,18 +208,18 @@ addr_dw="tb1p..."
 # 5- Construct PSBT (Retrieve UTXO)
 fee=100
 btc-cold check tr.wallet -e $electrum_host -p $electrum_port
-btc-cold construct --input "$txid:$vout /0/0" ./tr.wallet ./psbt.rgb -e $electrum_host -p $electrum_port $fee
+btc-cold construct --input "$txid:$vout /0/0" --allow-tapret-path 1 ./tr.wallet ./psbt.rgb -e $electrum_host -p $electrum_port $fee
 ```
 
 ### _Bonus2: Sign PSBT_
 
 ```bash
 # 1- Create Anchor
-# docker cp [DOCKER_CONTAINER_ID]:/var/lib/rgb/psbt.rgb ./shared/psbt.final   <--- for docker noobs =)
-dbc commit ./shared/psbt.final ./shared/psbt.out
+# docker cp [DOCKER_CONTAINER_ID]:/var/lib/rgb/psbt.rgb ./shared/psbt.rgbt    <--- for docker noobs =)
+dbc commit ./shared/psbt.rgbt ./shared/psbt.final
 
 # 2- Sign PSBT
-btc-hot sign ./shared/psbt.out ./tr.derive
+btc-hot sign ./shared/psbt.final ./tr.derive
 
 # 4- Finalize
 btc-cold finalize --publish regtest ./shared/psbt.final -e $electrum_host -p $electrum_port

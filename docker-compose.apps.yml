@@ -42,17 +42,17 @@ services:
       [
         "-vvvv",
         "--data-dir=${STORM_DATA_DIR}",
-        "--store-endpoint=${STORE_DATA_DIR}",
+        "--store-endpoint=${STORE_HOST_1}:${STORE_RPC_PORT}",
         "--msg=${LNP_IP_1}:${LNP_RPC_PORT}",
         "--chat",
         "--downpour",
+        "--threaded"
       ]
     depends_on:
       - lnp1
       - store1
     volumes:
       - storm1_data:/var/lib/storm
-      - ./shared/storm-stored:/var/lib/store 
     networks:
       sr_network:
         ipv4_address: 172.20.0.20

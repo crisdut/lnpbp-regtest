@@ -27,7 +27,7 @@ services:
     expose: [9735, 62962]      
     networks:
       sr_network:
-        ipv4_address: 172.20.0.8  
+        ipv4_address: 172.20.0.8
         aliases:
           - ${LNP_HOST_1}
 
