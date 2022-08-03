@@ -160,7 +160,7 @@ fungible1 transfer --utxo "$txid:$vout" --change $change_value /var/lib/rgb/fung
 
 # 3- Transfer Asset (After Create PSBT**)
 # docker cp ./shared/fungible.psbt [DOCKER_CONTAINER_ID]:/var/lib/rgb/  <--- for docker noobs =)
-rgb01 contract embed $contractID /var/lib/rgb/fungible.psbt
+rgb01 contract embed $contractID /var/lib/rgb/fungible.psbt #embed contract
 rgb01 transfer combine $contractID /var/lib/rgb/fungible.rgbt /var/lib/rgb/fungible.psbt  "$txid:$vout" -n regtest
 
 # 4- Check PSBT Transfer
@@ -179,30 +179,30 @@ rgbstd1 consignment validate /var/lib/rgb/fungible.rgbc "$electrum_host:$electru
 
 ```bash
 # 1- Generate seed and private key
-btc-hot seed -P ./regtest.seed
-btc-hot seed -P ./regtest.seed2
+btc-hot seed -P ./wallets/regtest.seed
+btc-hot seed -P ./wallets/regtest.seed2
 
 # 2- Save Wallet Descriptors
-btc-hot derive --testnet --scheme bip86 -P ./regtest.seed ./regtest.tr
-btc-hot derive --testnet --scheme bip86 -P ./regtest.seed2 ./regtest.tr2
+btc-hot derive --testnet --scheme bip86 -P ./wallets/regtest.seed ./wallets/regtest.tr
+btc-hot derive --testnet --scheme bip86 -P ./wallets/regtest.seed2 ./wallets/regtest.tr2
 
 wl="tr(m=[..."
 wl2="tr(m=[..."
 
-echo $wl > ./regtest.desc
-echo $wl2 > ./regtest.desc2
+echo $wl > ./wallets/regtest.desc
+echo $wl2 > ./wallets/regtest.desc2
 
 # 3- Generate Wallets
-btc-cold create ./regtest.desc ./regtest.wallet -e $electrum_host -p $electrum_port
-btc-cold create ./regtest.desc2 ./regtest.wallet2 -e $electrum_host -p $electrum_port
+btc-cold create --regtest ./wallets/regtest.desc ./wallets/regtest.wallet -e $electrum_host -p $electrum_port
+btc-cold create --regtest ./wallets/regtest.desc2 ./wallets/regtest.wallet2 -e $electrum_host -p $electrum_port
 
 # 4- Get Issue and Change Address
-btc-cold address ./regtest.wallet  -e $electrum_host -p $electrum_port
+btc-cold address ./wallets/regtest.wallet -e $electrum_host -p $electrum_port
 issueaddr="tb1p..."
 changeaddr="tb1p..."
 
 # 5- Get Receive Address
-btc-cold address ./regtest.wallet2  -e $electrum_host -p $electrum_port
+btc-cold address ./wallets/regtest.wallet2  -e $electrum_host -p $electrum_port
 receiveaddr="tb1p..."
 ```
 
