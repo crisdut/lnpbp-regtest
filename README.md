@@ -159,16 +159,16 @@ spent_value="10@$seal_definition"
 fungible1 transfer --utxo "$txid:$vout" --change $change_value /var/lib/rgb/fungible.rgbc $spent_value /var/lib/rgb/fungible.rgbt
 
 # 3- Transfer Asset (After Create PSBT**)
-# docker cp ./shared/fungible.psbt [DOCKER_CONTAINER_ID]:/var/lib/rgb/  <--- for docker noobs =)
+# docker cp ./wallets/fungible.psbt [DOCKER_CONTAINER_ID]:/var/lib/rgb/  <--- for docker noobs =)
 rgb01 contract embed $contractID /var/lib/rgb/fungible.psbt #embed contract
-rgb01 transfer combine $contractID /var/lib/rgb/fungible.rgbt /var/lib/rgb/fungible.psbt  "$txid:$vout" -n regtest
+rgb01 transfer combine $contractID /var/lib/rgb/fungible.rgbt /var/lib/rgb/fungible.psbt  "$txid:$vout"
 
 # 4- Check PSBT Transfer
 rgbstd1 psbt bundle /var/lib/rgb/fungible.psbt
 rgbstd1 psbt analyze /var/lib/rgb/fungible.psbt
 
 # 5- Make a Transfer
-rgb01 transfer finalize -n regtest --endseal $seal_definition /var/lib/rgb/fungible.psbt /var/lib/rgb/fungible.rgbc --send "$pb@$lnp1_ip:$lnp1_port" 
+rgb01 transfer finalize --endseal $seal_definition /var/lib/rgb/fungible.psbt /var/lib/rgb/fungible.rgbc --send "$pb@$lnp1_ip:$lnp1_port" 
 rgbstd1 consignment validate /var/lib/rgb/fungible.rgbc "$electrum_host:$electrum_port"
 
 # 6- Check Transfer (After Sign PSBT**)
@@ -219,11 +219,11 @@ btc-cold construct --input "$txid:$vout /0/0" --allow-tapret-path 1 ./regtest.wa
 
 ```bash
 # 1- Create Anchor
-# docker cp [DOCKER_CONTAINER_ID]:/var/lib/rgb/fungible.psbt ./shared/fungible.out    <--- for docker noobs =)
-dbc commit ./shared/fungible.out
+# docker cp [DOCKER_CONTAINER_ID]:/var/lib/rgb/fungible.psbt ./wallets/fungible.out    <--- for docker noobs =)
+dbc commit ./wallets/fungible.out ./shared/fungible.dbc
 
 # 2- Sign PSBT
-btc-hot sign ./shared/fungible.out ./regtest.tr
+btc-hot sign ./wallets/fungible.dbc ./regtest.tr
 
 # 3- Finalize
 btc-cold finalize --publish regtest ./fungible.out -e $electrum_host -p $electrum_port
