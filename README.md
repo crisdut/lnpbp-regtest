@@ -159,16 +159,16 @@ spent_value="10@$seal_definition"
 fungible1 transfer --utxo "$txid:$vout" --change $change_value /var/lib/rgb/fungible.rgbc $spent_value /var/lib/rgb/fungible.rgbt
 
 # 3- Transfer Asset (After Create PSBT**)
-# docker cp ./shared/fungible.psbt [DOCKER_CONTAINER_ID]:/var/lib/rgb/  <--- for docker noobs =)
-rgb01 contract embed $contractID /var/lib/rgb/fungible.psbt
-rgb01 transfer combine $contractID /var/lib/rgb/fungible.rgbt /var/lib/rgb/fungible.psbt  "$txid:$vout" -n regtest
+# docker cp ./wallets/fungible.psbt [DOCKER_CONTAINER_ID]:/var/lib/rgb/  <--- for docker noobs =)
+rgb01 contract embed $contractID /var/lib/rgb/fungible.psbt #embed contract
+rgb01 transfer combine $contractID /var/lib/rgb/fungible.rgbt /var/lib/rgb/fungible.psbt  "$txid:$vout"
 
 # 4- Check PSBT Transfer
 rgbstd1 psbt bundle /var/lib/rgb/fungible.psbt
 rgbstd1 psbt analyze /var/lib/rgb/fungible.psbt
 
 # 5- Make a Transfer
-rgb01 transfer finalize -n regtest --endseal $seal_definition /var/lib/rgb/fungible.psbt /var/lib/rgb/fungible.rgbc --send "$pb@$lnp1_ip:$lnp1_port" 
+rgb01 transfer finalize --endseal $seal_definition /var/lib/rgb/fungible.psbt /var/lib/rgb/fungible.rgbc --send "$pb@$lnp1_ip:$lnp1_port" 
 rgbstd1 consignment validate /var/lib/rgb/fungible.rgbc "$electrum_host:$electrum_port"
 
 # 6- Check Transfer (After Sign PSBT**)
@@ -179,30 +179,30 @@ rgbstd1 consignment validate /var/lib/rgb/fungible.rgbc "$electrum_host:$electru
 
 ```bash
 # 1- Generate seed and private key
-btc-hot seed -P ./regtest.seed
-btc-hot seed -P ./regtest.seed2
+btc-hot seed -P ./wallets/regtest.seed
+btc-hot seed -P ./wallets/regtest.seed2
 
 # 2- Save Wallet Descriptors
-btc-hot derive --testnet --scheme bip86 -P ./regtest.seed ./regtest.tr
-btc-hot derive --testnet --scheme bip86 -P ./regtest.seed2 ./regtest.tr2
+btc-hot derive --testnet --scheme bip86 -P ./wallets/regtest.seed ./wallets/regtest.tr
+btc-hot derive --testnet --scheme bip86 -P ./wallets/regtest.seed2 ./wallets/regtest.tr2
 
 wl="tr(m=[..."
 wl2="tr(m=[..."
 
-echo $wl > ./regtest.desc
-echo $wl2 > ./regtest.desc2
+echo $wl > ./wallets/regtest.desc
+echo $wl2 > ./wallets/regtest.desc2
 
 # 3- Generate Wallets
-btc-cold create ./regtest.desc ./regtest.wallet -e $electrum_host -p $electrum_port
-btc-cold create ./regtest.desc2 ./regtest.wallet2 -e $electrum_host -p $electrum_port
+btc-cold create --regtest ./wallets/regtest.desc ./wallets/regtest.wallet -e $electrum_host -p $electrum_port
+btc-cold create --regtest ./wallets/regtest.desc2 ./wallets/regtest.wallet2 -e $electrum_host -p $electrum_port
 
 # 4- Get Issue and Change Address
-btc-cold address ./regtest.wallet  -e $electrum_host -p $electrum_port
+btc-cold address ./wallets/regtest.wallet -e $electrum_host -p $electrum_port
 issueaddr="tb1p..."
 changeaddr="tb1p..."
 
 # 5- Get Receive Address
-btc-cold address ./regtest.wallet2  -e $electrum_host -p $electrum_port
+btc-cold address ./wallets/regtest.wallet2  -e $electrum_host -p $electrum_port
 receiveaddr="tb1p..."
 ```
 
@@ -219,11 +219,11 @@ btc-cold construct --input "$txid:$vout /0/0" --allow-tapret-path 1 ./regtest.wa
 
 ```bash
 # 1- Create Anchor
-# docker cp [DOCKER_CONTAINER_ID]:/var/lib/rgb/fungible.psbt ./shared/fungible.out    <--- for docker noobs =)
-dbc commit ./shared/fungible.out
+# docker cp [DOCKER_CONTAINER_ID]:/var/lib/rgb/fungible.psbt ./wallets/fungible.out    <--- for docker noobs =)
+dbc commit ./wallets/fungible.out ./shared/fungible.dbc
 
 # 2- Sign PSBT
-btc-hot sign ./shared/fungible.out ./regtest.tr
+btc-hot sign ./wallets/fungible.dbc ./regtest.tr
 
 # 3- Finalize
 btc-cold finalize --publish regtest ./fungible.out -e $electrum_host -p $electrum_port

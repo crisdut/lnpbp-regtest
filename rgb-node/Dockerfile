@@ -1,20 +1,28 @@
 FROM rust:1.61.0-slim-buster as builder
+ARG SOURCE_CODE=https://github.com/crisdut/rgb-node.git
+ARG BUILDER_SOURCE=/opt/src/rgb
 ARG BUILDER_DIR=/srv/rgb
+ARG VERSION=d032b53 
 
-RUN apt-get update && apt-get install -y build-essential
+RUN apt-get update && apt-get install -y build-essential git
 
 WORKDIR $BUILDER_DIR
 RUN cargo install rgb-std --version "=0.8.0" \
         --locked --all-features --root "${BUILDER_DIR}"
 
-RUN cargo install rgb20 --version "=0.8.0-rc.3" \
+RUN cargo install rgb20 --version "=0.8.0-rc.4" \
         --locked --all-features --root "${BUILDER_DIR}"
 
-RUN cargo install rgb_node --version "=0.8.0-rc.1" \
-        --locked --all-features --root "${BUILDER_DIR}"
+WORKDIR $BUILDER_SOURCE
+RUN git clone $SOURCE_CODE $BUILDER_SOURCE
+RUN git checkout $VERSION
+RUN cargo install --locked --all-features --path . --root ${BUILDER_DIR}
 
-RUN cargo install rgb-cli --version "=0.8.0-rc.1" \
-        --locked --all-features --root "${BUILDER_DIR}"
+# RUN cargo install rgb_node --version "=0.8.0" \
+#         --locked --all-features --root "${BUILDER_DIR}"
+
+# RUN cargo install rgb-cli --version "=0.8.0" \
+#         --locked --all-features --root "${BUILDER_DIR}"
 
 FROM rust:1.61.0-slim-buster as runtime
 ARG BUILDER_DIR=/srv/rgb

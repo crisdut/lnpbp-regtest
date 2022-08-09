@@ -4,7 +4,7 @@ FROM alpine:3.14 as builder
 ARG SOURCE_CODE=https://github.com/crisdut/bitcoin.git
 ARG BUILDER_SOURCE=/opt/src
 ARG BUILDER_DIR=/opt/bitcoin
-ARG BITCOIN_VERSION=v22.0
+ARG BITCOIN_VERSION=v23.0rc2
 
 RUN apk add \
     autoconf \
