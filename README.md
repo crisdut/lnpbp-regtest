@@ -146,7 +146,7 @@ blind_factor="..."
 ```bash
 # 1- Prepare Consignment (State Transfer)
 rgb01 transfer compose $contractID $txid:$vout /var/lib/rgb/fungible.rgbc
-rgbstd1 consignment validate /var/lib/rgb/fungible.rgbc
+rgbstd1 consignment validate /var/lib/rgb/fungible.rgbc "$electrum_host:$electrum_port"
 
 # 2- Prepare to Transfer Change
 change_txid='...' #example (change address transaction)
@@ -160,8 +160,8 @@ fungible1 transfer --utxo "$txid:$vout" --change $change_value /var/lib/rgb/fung
 
 # 3- Transfer Asset (After Create PSBT**)
 # docker cp ./wallets/fungible.psbt [DOCKER_CONTAINER_ID]:/var/lib/rgb/  <--- for docker noobs =)
-rgb01 contract embed $contractID /var/lib/rgb/fungible.psbt #embed contract
-rgb01 transfer combine $contractID /var/lib/rgb/fungible.rgbt /var/lib/rgb/fungible.psbt  "$txid:$vout"
+rgb01 contract embed $contractID /var/lib/rgb/fungible.psbt
+rgb01 transfer combine $contractID /var/lib/rgb/fungible.rgbt /var/lib/rgb/fungible.psbt "$txid:$vout"
 
 # 4- Check PSBT Transfer
 rgbstd1 psbt bundle /var/lib/rgb/fungible.psbt
@@ -173,6 +173,12 @@ rgbstd1 consignment validate /var/lib/rgb/fungible.rgbc "$electrum_host:$electru
 
 # 6- Check Transfer (After Sign PSBT**)
 rgbstd1 consignment validate /var/lib/rgb/fungible.rgbc "$electrum_host:$electrum_port"
+
+# 7- Consume Transfer
+rgb01 transfer consume /var/lib/rgb/fungible.rgbc
+rgb02 transfer consume /var/lib/rgb/fungible.rgbc
+
+# 8- Accept Transfer
 ```
 
 ### _Bonus: Create Wallets_
@@ -211,21 +217,18 @@ receiveaddr="tb1p..."
 ```bash
 # 1- Construct PSBT (Retrieve UTXO)
 fee=1000
-btc-cold check regtest.wallet -e $electrum_host -p $electrum_port
-btc-cold construct --input "$txid:$vout /0/0" --allow-tapret-path 1 ./regtest.wallet ./fungible.psbt -e $electrum_host -p $electrum_port $fee
+btc-cold check ./wallets/regtest.wallet -e $electrum_host -p $electrum_port
+btc-cold construct --input "$txid:$vout /0/0" --allow-tapret-path 1 ./wallets/regtest.wallet ./wallets/fungible.psbt -e $electrum_host -p $electrum_port $fee
 ```
 
-### _Bonus: Sign PSBT_
+### _Bonus: Sign and Publish PSBT_
 
 ```bash
-# 1- Create Anchor
-# docker cp [DOCKER_CONTAINER_ID]:/var/lib/rgb/fungible.psbt ./wallets/fungible.out    <--- for docker noobs =)
-dbc commit ./wallets/fungible.out ./shared/fungible.dbc
+# 1- Sign PSBT
+# docker cp [DOCKER_CONTAINER_ID]:/var/lib/rgb/fungible.psbt ./wallets/fungible.sign    <--- for docker noobs =)
+btc-hot sign ./wallets/fungible.sign ./wallets/regtest.tr
 
-# 2- Sign PSBT
-btc-hot sign ./wallets/fungible.dbc ./regtest.tr
-
-# 3- Finalize
+# 2- Send PSBT transaction
 btc-cold finalize --publish regtest ./fungible.out -e $electrum_host -p $electrum_port
 
 ```

@@ -14,8 +14,8 @@ alias cln01="docker-compose exec cln1 lightning-cli --network=regtest"
 alias rgbd1="docker-compose run --rm rgb1 -vvvv --network=regtest --bin-dir=${RGB_BIN_DIR} --data-dir=${RPC_DATA_DIR} --electrum-server=${ELECTRS_HOST} --electrum-port=${ELECTRS_PORT}"
 alias rgbd2="docker-compose run --rm rgb2 -vvvv --network=regtest --bin-dir=${RGB_BIN_DIR} --data-dir=${RGB_DATA_DIR} --electrum-server=${ELECTRS_HOST} --electrum-port=${ELECTRS_PORT}"
 
-alias rgb01="docker-compose exec -T rgb1 rgb-cli -vvvv --network=regtest"
-alias rgb02="docker-compose exec -T rgb2 rgb-cli -vvvv --network=regtest"
+alias rgb01="docker-compose exec -T rgb1 rgb-cli -vvvv --chain=regtest"
+alias rgb02="docker-compose exec -T rgb2 rgb-cli -vvvv --chain=regtest"
 
 alias fungible1="docker-compose exec -T rgb1 rgb20 --network=regtest"
 alias fungible2="docker-compose exec -T rgb2 rgb20 --network=regtest"
