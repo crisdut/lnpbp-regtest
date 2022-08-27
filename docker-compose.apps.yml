@@ -1,56 +1,78 @@
-version: '3.7'
+version: "3.7"
 volumes:
-  electrs_data:
-  storm1_data:
+  explorer_api_data:
 
 services:
-  electrs:
-    container_name: electrs
-    image: sr/electrs:latest
-    build:
-      context: ./electrs/
-    restart: unless-stopped
-    command:
-      [
-        "--timestamp",
-        "--network=regtest",
-        "--db-dir=/var/lib/electrs/db",
-        "--electrum-rpc-addr=0.0.0.0:${ELECTRS_PORT}",
-        "--daemon-p2p-addr=node1:${BITCOIN_PORT}",
-        "--daemon-rpc-addr=node1:${BITCOIN_RPC_PORT}",
-      ]
+  mempool_web:
+    image: mempool/frontend:latest
+    command: "./wait-for mempool_db:3306 --timeout=720 -- nginx -g 'daemon off;'"
+    # command: "nginx -g 'daemon off;'"
+    restart: on-failure
+    stop_grace_period: 1m
+    user: "1000:1000"
+    environment:
+      FRONTEND_HTTP_PORT: "8080"
+      BACKEND_MAINNET_HTTP_HOST: "mempool_api"
+    depends_on:
+      - mempool_api
+    ports:
+      - 80:8080
+    networks:
+      sr_network:
+        aliases:
+          - mempool_web
+
+  mempool_api:
+    image: mempool/backend:latest
+    command: "./wait-for-it.sh mempool_db:3306 --timeout=720 --strict -- ./start.sh"
+    # command: "./start.sh"
+    restart: on-failure    
+    stop_grace_period: 1m
+    user: "1000:1000"    
+    environment:
+      # Electrum
+      MEMPOOL_NETWORK: "testnet"
+      MEMPOOL_BACKEND: "electrum"
+      ELECTRUM_HOST: "${ELECTRS_HOST}"
+      ELECTRUM_PORT: "${ELECTRS_PORT}"
+      ELECTRUM_TLS_ENABLED: "false"
+      # Bitcoin
+      CORE_RPC_HOST: "${BITCOIN_HOST_1}"
+      CORE_RPC_PORT: "${BITCOIN_RPC_PORT}"
+      CORE_RPC_USERNAME: "${BITCOIN_RPC_USER}"
+      CORE_RPC_PASSWORD: "${BITCOIN_RPC_PASSWORD}"
+      # Database
+      DATABASE_ENABLED: "true"
+      DATABASE_HOST: "mempool_db"
+      DATABASE_DATABASE: "mempool"
+      DATABASE_USERNAME: "mempool"
+      DATABASE_PASSWORD: "mempool"
+      # Statss
+      STATISTICS_ENABLED: "false"
     volumes:
-      - electrs_data:/home/electrs
+      - explorer_api_data:/backend/cache
     depends_on:
       - node1
-    ports:
-      - ${ELECTRS_PORT}:${ELECTRS_PORT}
+      - electrs
+      - mempool_db      
     networks:
       sr_network:
-        ipv4_address: 172.20.0.22
         aliases:
-          - ${ELECTRS_HOST}
+          - mempool_api
 
-  storm1:
-    container_name: storm1
-    image: sr/storm:latest
-    build:
-      context: ./storm-node/
-    command:
-      [
-        "-vvvv",
-        "--data-dir=${STORM_DATA_DIR}",
-        "--store-endpoint=${STORE_HOST_1}:${STORE_RPC_PORT}",
-        "--msg=${LNP_IP_1}:${LNP_RPC_PORT}",
-        "--chat",
-        "--downpour",
-        "--threaded"
-      ]
-    depends_on:
-      - lnp1
-      - store1
+  mempool_db:
+    image: mariadb:10.3.22
+    restart: on-failure
+    stop_grace_period: 1m
+    user: "1000:1000"
+    environment:
+      MYSQL_DATABASE: "mempool"
+      MYSQL_USER: "mempool"
+      MYSQL_PASSWORD: "mempool"
+      MYSQL_ROOT_PASSWORD: "admin"
     volumes:
-      - storm1_data:/var/lib/storm
+      - ./data:/var/lib/mysql
     networks:
       sr_network:
-        ipv4_address: 172.20.0.20
+        aliases:
+          - mempool_db

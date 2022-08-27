@@ -4,6 +4,7 @@ volumes:
   rgb2_data:
   store1_data:
   store2_data:
+  storm1_data:
 
 services:
   rgb1:
@@ -88,3 +89,27 @@ services:
     networks:
       sr_network:
         ipv4_address: 172.20.0.24
+
+  storm1:
+    container_name: storm1
+    image: sr/storm:latest
+    build:
+      context: ./storm-node/
+    command:
+      [
+        "-vvvv",
+        "--data-dir=${STORM_DATA_DIR}",
+        "--store-endpoint=${STORE_HOST_1}:${STORE_RPC_PORT}",
+        "--msg=${LNP_IP_1}:${LNP_RPC_PORT}",
+        "--chat",
+        "--downpour",
+        "--threaded"
+      ]
+    depends_on:
+      - lnp1
+      - store1
+    volumes:
+      - storm1_data:/var/lib/storm
+    networks:
+      sr_network:
+        ipv4_address: 172.20.0.20

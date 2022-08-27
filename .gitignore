@@ -4,3 +4,4 @@ logs
 *.psbt
 *.key
 /shared
+/data
