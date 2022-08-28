@@ -1,4 +1,4 @@
-# Docker setup for Satoshi Racer Nodes (LNP, RGB & DLC integration) in regtest mode
+# Docker setup for LNPBP Nodes (Bitcoin, LNP & RGB) in regtest mode
 
 ### ONLY FOR DEVELOPMENT and TESTING. These tools may not be suitable for production deployments.
 
@@ -32,6 +32,7 @@ cargo install bp-core --version "0.8.0"  --all-features --locked
 ```
 
 ### Start Nodes
+
 
 ### _Running L1_ 
 
@@ -82,6 +83,9 @@ b01 sendtoaddress $receiveaddr 0.0001
 b01 generatetoaddress 10 $(echo $addr1)
 ```
 
+### _Running APPs_
+
+
 ### _Running L2_
 
 ```bash
@@ -102,7 +106,7 @@ lnp01 listen # or set --listen parameters on initalization of the node
 lnp02 listen # or set --listen parameters on initalization of the node
 
 lnp02 info # get public key
-lnp01 connect "$pb@$lnp2_ip:$lnp2_port"
+lnp01 connect "bifrost://$pb@$lnp2_ip:$lnp2_port"
 
 ```
 ### _Running L3_ 
