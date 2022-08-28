@@ -125,8 +125,8 @@ docker-compose up -d storm1 storm2
 txid='...' #example (issuer transaction)
 vout='...' #example (issuer vout)
 
-ticker="SRC"
-name="Satoshi Racer Coin"
+ticker="USDT"
+name="Tether Stablecoin"
 amount="1000"
 allocation="$amount@$txid:$vout"
 
@@ -221,8 +221,9 @@ receiveaddr="tb1p..."
 ```bash
 # 1- Construct PSBT (Retrieve UTXO)
 fee=1000
+change_addr="$issueaddr:99000" # Avoid "burn bitcoin" (PROVABLY_UNSPENDABLE problem)
 btc-cold check ./wallets/regtest.wallet -e $electrum_host -p $electrum_port
-btc-cold construct --input "$txid:$vout /0/0" --allow-tapret-path 1 ./wallets/regtest.wallet ./wallets/fungible.psbt -e $electrum_host -p $electrum_port $fee
+btc-cold construct --input "$txid:$vout /0/0" --allow-tapret-path 1 ./wallets/regtest.wallet ./wallets/fungible.psbt -e $electrum_host -p $electrum_port $fee --output $change_addr
 ```
 
 ### _Bonus: Sign and Publish PSBT_
@@ -233,6 +234,6 @@ btc-cold construct --input "$txid:$vout /0/0" --allow-tapret-path 1 ./wallets/re
 btc-hot sign ./wallets/fungible.sign ./wallets/regtest.tr
 
 # 2- Send PSBT transaction
-btc-cold finalize --publish regtest ./fungible.out -e $electrum_host -p $electrum_port
+btc-cold finalize --publish regtest ./wallets/fungible.sign -e $electrum_host -p $electrum_port
 
 ```

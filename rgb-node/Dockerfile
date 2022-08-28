@@ -13,16 +13,16 @@ RUN cargo install rgb-std --version "=0.8.0" \
 RUN cargo install rgb20 --version "=0.8.0-rc.4" \
         --locked --all-features --root "${BUILDER_DIR}"
 
-WORKDIR $BUILDER_SOURCE
-RUN git clone $SOURCE_CODE $BUILDER_SOURCE
-RUN git checkout $VERSION
-RUN cargo install --locked --all-features --path . --root ${BUILDER_DIR}
-
 # RUN cargo install rgb_node --version "=0.8.0" \
 #         --locked --all-features --root "${BUILDER_DIR}"
 
 # RUN cargo install rgb-cli --version "=0.8.0" \
 #         --locked --all-features --root "${BUILDER_DIR}"
+WORKDIR $BUILDER_SOURCE
+RUN git clone $SOURCE_CODE $BUILDER_SOURCE
+RUN git checkout $VERSION
+# TODO: Remove after fix issue https://github.com/RGB-WG/rgb-node/issues/197
+RUN cargo install --locked --debug --all-features --path . --root ${BUILDER_DIR}
 
 FROM rust:1.61.0-slim-buster as runtime
 ARG BUILDER_DIR=/srv/rgb

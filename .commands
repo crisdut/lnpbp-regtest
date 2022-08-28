@@ -24,5 +24,6 @@ alias rgbstd1="docker-compose exec -T rgb1 rgb"
 alias rgbstd2="docker-compose exec -T rgb2 rgb"
 
 alias stormd1="docker-compose run --rm storm1 --network=regtest --data-dir=${STORM_DATA_DIR}"
-
 alias storm01="docker-compose exec storm1 storm-cli -vvvv --lnp=${LNP_IP_1}:${LNP_RPC_PORT}"
+
+alias store01="docker-compose exec store1 store-cli -vvvv"
