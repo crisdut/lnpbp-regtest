@@ -2,7 +2,7 @@ FROM rust:1.61.0-slim-buster as builder
 ARG SOURCE_CODE=https://github.com/crisdut/rgb-node.git
 ARG BUILDER_SOURCE=/opt/src/rgb
 ARG BUILDER_DIR=/srv/rgb
-ARG VERSION=fix/save-psbt-anchors 
+ARG VERSION=feat/exp-reveal 
 
 RUN apt-get update && apt-get install -y build-essential git
 

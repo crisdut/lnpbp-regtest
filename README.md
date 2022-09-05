@@ -68,19 +68,17 @@ b02 -rpcwallet=beta listtransactions
 b02 -rpcwallet=beta listunspent
 
 # 6- Send coins to Issue Address (After Create Wallets**)
-$issueaddr="tb1..."
+$issueaddr="bcrt1..."
 b01 sendtoaddress $issueaddr 0.001
-b01 generatetoaddress 10 $(echo $addr1)
 
 # 7- Send coins to change Address (After Create Wallets**)
-$changeaddr="tb1..."
+$changeaddr="bcrt1..."
 b01 sendtoaddress $changeaddr 0.001
-b01 generatetoaddress 10 $(echo $addr1)
 
 # 8- Send coins to Receive Address (After Create Wallets**)
-$receiveaddr="tb1..."
+$receiveaddr="bcrt1..."
 b01 sendtoaddress $receiveaddr 0.0001
-b01 generatetoaddress 10 $(echo $addr1)
+b01 generatetoaddress 1 $(echo $addr1)
 ```
 
 ### _Running APPs_
@@ -177,12 +175,14 @@ rgbstd1 consignment validate /var/lib/rgb/fungible.rgbc "$electrum_host:$electru
 
 # 6- Check Transfer (After Sign PSBT**)
 rgbstd1 consignment validate /var/lib/rgb/fungible.rgbc "$electrum_host:$electrum_port"
+b01 generatetoaddress 1 $(echo $addr1)
 
 # 7- Consume Transfer
 rgb01 transfer consume /var/lib/rgb/fungible.rgbc
 rgb02 transfer consume /var/lib/rgb/fungible.rgbc
 
 # 8- Accept Transfer
+rgb02 transfer accept /var/lib/rgb/fungible.rgbc $receive_txid:$receive_vout $blind_factor
 ```
 
 ### _Bonus: Create Wallets_
