@@ -30,17 +30,17 @@ ARG BIN_DIR=/usr/local/bin
 ARG DATA_DIR=/var/lib/rgb
 ARG USER=rgbd
 
-RUN adduser --home "${DATA_DIR}" --shell /bin/bash --disabled-login \
-        --gecos "${USER} user" ${USER}
-
-COPY --from=builder --chown=${USER}:${USER} \
-     "${BUILDER_DIR}/bin/" "${BIN_DIR}/"
-
 RUN apt-get update -y \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-WORKDIR "${BIN_DIR}"
+RUN adduser --home "${DATA_DIR}" --shell /bin/bash --disabled-login \
+        --gecos "${USER} user" ${USER}
+
 USER ${USER}
+WORKDIR "${BIN_DIR}"
+
+COPY --from=builder --chown=${USER}:${USER} \
+     "${BUILDER_DIR}/bin/" "${BIN_DIR}/"
 
 VOLUME "$DATA_DIR"
 

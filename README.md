@@ -28,7 +28,6 @@ source .commands
 ### _Install Wallet Descriptor and DBC_
 ```bash
 cargo install descriptor-wallet --version "0.8.2" --all-features --locked
-cargo install bp-core --version "0.8.0"  --all-features --locked
 ```
 
 ### Start Nodes
@@ -112,8 +111,8 @@ lnp01 connect "bifrost://$pb@$lnp2_ip:$lnp2_port"
 ```bash
 # 1- Up and running nodes
 docker-compose up -d store1 store2
-docker-compose up -d rgb1 rgb2 
 docker-compose up -d storm1 storm2
+docker-compose up -d rgb1 rgb2 
 ```
 
 ### _Create Issue_
