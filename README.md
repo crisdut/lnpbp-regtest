@@ -94,25 +94,29 @@ lnpd2 init # tprv8ZgxMBicQKsPdXjTY8BuF4WPhEhfGELSMiZM1XfLNcR2hka3wTKPqakbpMDHedY
 docker-compose up -d lnp1 lnp2
 
 # 3- Connect nodes
-lnp1_ip='172.20.0.8'   # example
-lnp1_port='9735'        # example
-lnp2_ip='172.20.0.10'   # example
-lnp2_port='9735'        # example
+lnp1_ip='172.20.0.8'  
+lnp1_port='9997'  
+lnp2_ip='172.20.0.10' 
+lnp2_port='9998'
 
-lnp01 listen # or set --listen parameters on initalization of the node
-lnp02 listen # or set --listen parameters on initalization of the node
+lnp01 listen --bifrost -p $lnp1_port
+lnp02 listen --bifrost -p $lnp2_port
 
-lnp02 info # get public key
-lnp01 connect "bifrost://$pb@$lnp2_ip:$lnp2_port"
+lnp02 info --bifrost # get pb2
+lnp01 connect "bifrost://$pb2@$lnp2_ip:$lnp2_port"
+
+# 4 - Check peers
+lnp01 peers
+lnp02 peers
 
 ```
-### _Running L3_ 
+### _Running L3_
 
 ```bash
 # 1- Up and running nodes
 docker-compose up -d store1 store2
 docker-compose up -d storm1 storm2
-docker-compose up -d rgb1 rgb2 
+docker-compose up -d rgb1 rgb2
 ```
 
 ### _Create Issue_
@@ -169,7 +173,9 @@ rgbstd1 psbt bundle /var/lib/rgb/fungible.psbt
 rgbstd1 psbt analyze /var/lib/rgb/fungible.psbt
 
 # 5- Make a Transfer
-rgb01 transfer finalize --endseal $seal_definition /var/lib/rgb/fungible.psbt /var/lib/rgb/fungible.rgbc --send "$pb@$lnp1_ip:$lnp1_port" 
+lnp_storm_ip=172.20.0.20
+lnp_storm_port=64964
+rgb01 transfer finalize --endseal $seal_definition /var/lib/rgb/fungible.psbt /var/lib/rgb/fungible.rgbc --send "$pb2@$lnp_storm_ip:$lnp_storm_port"
 rgbstd1 consignment validate /var/lib/rgb/fungible.rgbc "$electrum_host:$electrum_port"
 
 # 6- Check Transfer (After Sign PSBT**)

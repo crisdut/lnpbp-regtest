@@ -1,19 +1,23 @@
 FROM rust:1.61.0-slim-buster as builder
 ARG BUILDER_DIR=/srv/storm
+ARG BUILDER_SOURCE=/opt/src/storm
+ARG SOURCE_CODE=https://github.com/crisdut/storm-node.git
+ARG VERSION=fix/receive-container
 
-RUN apt-get update && apt-get install -y build-essential
+RUN apt-get update && apt-get install -y build-essential git
 
 WORKDIR $BUILDER_DIR
-RUN cargo install storm_node --version "=0.8.0" \
-        --locked --debug --all-features --root "${BUILDER_DIR}"
-
-WORKDIR $BUILDER_DIR
-RUN cargo install storm-cli --version "=0.8.0" \
-        --locked --debug --all-features --root "${BUILDER_DIR}"        
+# RUN cargo install storm_node --version "=0.8.0" \
+#         --debug --locked --all-features --root "${BUILDER_DIR}"
 
 # WORKDIR $BUILDER_DIR
-# RUN cargo install storm_ext --version "=0.8.0-beta.1" \
-#         --locked --all-features --root "${BUILDER_DIR}"        
+# RUN cargo install storm-cli --version "=0.8.0" \
+#         --debug --locked --all-features --root "${BUILDER_DIR}"
+
+WORKDIR $BUILDER_SOURCE
+RUN git clone $SOURCE_CODE $BUILDER_SOURCE
+RUN git checkout $VERSION
+RUN cargo install --locked --debug --all-features --path . --root ${BUILDER_DIR}
 
 FROM rust:1.61.0-slim-buster as runtime
 ARG BUILDER_DIR=/srv/storm
@@ -39,4 +43,4 @@ EXPOSE 64964 40940
 
 ENTRYPOINT ["stormd"]
 
-CMD ["-vvvv", "--bin-dir", "/usr/local/bin", "--data-dir", "/var/lib/storm"]
+CMD ["-vvvv", "--data-dir", "/var/lib/storm"]

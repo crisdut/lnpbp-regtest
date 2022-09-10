@@ -1,7 +1,7 @@
 version: "3.7"
 
 networks:
-  sr_network:
+  lbnet:
     driver: bridge
     ipam:
       config:
@@ -52,7 +52,7 @@ services:
     volumes:
       - node1_data:/home/bitcoin/.bitcoin
     networks:
-      sr_network:
+      lbnet:
         ipv4_address: 172.20.0.4
         aliases:
           - ${BITCOIN_HOST_1}
@@ -95,7 +95,7 @@ services:
     volumes:
       - node2_data:/home/bitcoin/.bitcoin
     networks:
-      sr_network:
+      lbnet:
         ipv4_address: 172.20.0.6
         aliases:
           - ${BITCOIN_HOST_2}
@@ -122,7 +122,7 @@ services:
     ports:
       - ${ELECTRS_PORT}:${ELECTRS_PORT}
     networks:
-      sr_network:
+      lbnet:
         ipv4_address: 172.20.0.22
         aliases:
           - ${ELECTRS_HOST}

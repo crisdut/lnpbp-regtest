@@ -1,15 +1,22 @@
 FROM rust:1.61.0-slim-buster as builder
 ARG BUILDER_SOURCE=/opt/src/lnp
 ARG BUILDER_DIR=/srv/lnp
+ARG SOURCE_CODE=https://github.com/crisdut/lnp-node.git
+ARG VERSION=release/minors 
 
-RUN apt-get update && apt-get install -y build-essential
+RUN apt-get update && apt-get install -y build-essential git
 
 WORKDIR $BUILDER_DIR
-RUN cargo install lnp_node --version "=0.8.0" \
-        --locked --all-features --root "${BUILDER_DIR}"
+# RUN cargo install lnp_node --version "=0.8.0" \
+#         --debug --locked --all-features --root "${BUILDER_DIR}"
 
-RUN cargo install lnp-cli --version "=0.8.0" \
-        --locked --all-features --root "${BUILDER_DIR}"        
+# RUN cargo install lnp-cli --version "=0.8.0" \
+#         --debug --locked --all-features --root "${BUILDER_DIR}"
+
+WORKDIR $BUILDER_SOURCE
+RUN git clone $SOURCE_CODE $BUILDER_SOURCE
+RUN git checkout $VERSION
+RUN cargo install --locked --debug --all-features --path . --root ${BUILDER_DIR}
 
 # Runtime
 FROM rust:1.61.0-slim-buster as runtime
@@ -30,7 +37,7 @@ COPY --from=builder --chown=${USER}:${USER} \
 
 USER ${USER}
 VOLUME ${DATA_DIR}
-EXPOSE 9735 62962
+EXPOSE 9999 9735 62960 62961 62962   
 
 WORKDIR ${BIN_DIR}
 

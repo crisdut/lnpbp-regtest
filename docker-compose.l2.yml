@@ -17,15 +17,18 @@ services:
         "--chain=regtest",
         "--electrum-port=${ELECTRS_PORT}",
         "--electrum-server=${ELECTRS_HOST}",
+        "--msg=0.0.0.0:${LNP_MSG_PORT}",
+        "--ctl=0.0.0.0:${LNP_CTL_PORT}",
         "--data-dir=/var/lib/lnp",
+        "--threaded",
       ]
     depends_on:
       - electrs
     volumes:
       - lnp1_data:/var/lib/lnp
-    expose: [9735, 62962]
+    expose: [9997, 9998, 9999, 9735, 62960, 62961, 62962]
     networks:
-      sr_network:
+      lbnet:
         ipv4_address: 172.20.0.8
         aliases:
           - ${LNP_HOST_1}
@@ -42,15 +45,18 @@ services:
         "--chain=regtest",
         "--electrum-port=${ELECTRS_PORT}",
         "--electrum-server=${ELECTRS_HOST}",
+        "--msg=0.0.0.0:${LNP_MSG_PORT}",
+        "--ctl=0.0.0.0:${LNP_CTL_PORT}",
         "--data-dir=/var/lib/lnp",
+        "--threaded",
       ]
     depends_on:
       - electrs
     volumes:
       - lnp2_data:/var/lib/lnp
-    expose: [9735, 62962]
+    expose: [9997, 9998, 9735, 62960, 62961, 62962]  
     networks:
-      sr_network:
+      lbnet:
         ipv4_address: 172.20.0.10
         aliases:
           - ${LNP_HOST_2}
@@ -76,7 +82,7 @@ services:
     depends_on:
       - node1
     networks:
-      sr_network:
+      lbnet:
         ipv4_address: 172.20.0.12
         aliases:
           - ${CLN_HOST_1}

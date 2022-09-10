@@ -5,11 +5,11 @@ RUN apt-get update && apt-get install -y build-essential
 
 WORKDIR $BUILDER_DIR
 RUN cargo install store_daemon --version "=0.8.0" \
-        --locked --all-features --root "${BUILDER_DIR}"
+        --debug --locked --all-features --root "${BUILDER_DIR}"
 
 WORKDIR $BUILDER_DIR
 RUN cargo install store-cli --version "=0.8.0" \
-        --locked --all-features --root "${BUILDER_DIR}"        
+        --debug --locked --all-features --root "${BUILDER_DIR}"        
 
 FROM rust:1.61.0-slim-buster as runtime
 
