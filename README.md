@@ -184,10 +184,9 @@ b01 generatetoaddress 1 $(echo $addr1)
 
 # 7- Consume Transfer
 rgb01 transfer consume /var/lib/rgb/fungible.rgbc
-rgb02 transfer consume /var/lib/rgb/fungible.rgbc
 
-# 8- Accept Transfer
-rgb02 transfer accept /var/lib/rgb/fungible.rgbc $receive_txid:$receive_vout $blind_factor
+# 8- Reveal Transfer
+rgb02 transfer consume /var/lib/rgb/fungible.rgbc --reveal "tapret1st@$receive_txid:$receive_vout#$blind_factor"
 ```
 
 ### _Bonus: Create Wallets_
@@ -228,7 +227,7 @@ receiveaddr="tb1p..."
 fee=1000
 change_addr="$issueaddr:99000" # Avoid "burn bitcoin" (PROVABLY_UNSPENDABLE problem)
 btc-cold check ./wallets/regtest.wallet -e $electrum_host -p $electrum_port
-btc-cold construct --input "$txid:$vout /0/0" --allow-tapret-path 1 ./wallets/regtest.wallet ./wallets/fungible.psbt -e $electrum_host -p $electrum_port $fee --output $change_addr
+btc-cold construct --input "$txid:$vout /0/0" --allow-tapret-path 1 ./wallets/regtest.wallet ./wallets/fungible.psbt2 -e $electrum_host -p $electrum_port $fee --output $change_addr
 ```
 
 ### _Bonus: Sign and Publish PSBT_

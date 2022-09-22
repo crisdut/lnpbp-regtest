@@ -2,7 +2,7 @@ FROM rust:1.61.0-slim-buster as builder
 ARG SOURCE_CODE=https://github.com/crisdut/rgb-node.git
 ARG BUILDER_SOURCE=/opt/src/rgb
 ARG BUILDER_DIR=/srv/rgb
-ARG VERSION=feat/exp-reveal 
+ARG VERSION=exp/prs
 
 RUN apt-get update && apt-get install -y build-essential git
 
