@@ -28,7 +28,7 @@ services:
       - lnp1_data:/var/lib/lnp   
     expose: [9997, 9998, 9999, 9735, 62960, 62961, 62962]
     ports:
-      - ${LNP_RPC_PORT}:${LNP_RPC_PORT}      
+      - ${LNP_MSG_PORT}:${LNP_MSG_PORT}      
     networks:
       lbnet:
         ipv4_address: 172.20.0.8
@@ -58,7 +58,7 @@ services:
       - lnp2_data:/var/lib/lnp 
     expose: [9997, 9998, 9735, 62960, 62961, 62962]
     ports:
-      - ${LNP_ALT_RPC_PORT}:${LNP_RPC_PORT}    
+      - ${LNP_ALT_MSG_PORT}:${LNP_MSG_PORT}    
     networks:
       lbnet:
         ipv4_address: 172.20.0.10
