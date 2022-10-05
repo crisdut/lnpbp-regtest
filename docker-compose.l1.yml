@@ -12,6 +12,7 @@ volumes:
   node1_data:
   node2_data:
   electrs_data:
+  esplora_data:
 
 services:
   node1:
@@ -126,3 +127,21 @@ services:
         ipv4_address: 172.20.0.22
         aliases:
           - ${ELECTRS_HOST}
+
+  esplora:
+    container_name: esplora
+    image: sr/esplora:latest
+    build:
+      context: ./esplora/
+    restart: unless-stopped
+    command: ["/srv/explorer/run.sh", "bitcoin-regtest", "explorer"]
+    volumes:
+      - esplora_data:/data
+    ports:
+      - ${ESPLORA_PORT}:${ESPLORA_PORT}
+      - ${ESPLORA_REST}:80
+    networks:
+      lbnet:
+        ipv4_address: 172.20.0.32
+        aliases:
+          - ${ESPLORA_HOST}

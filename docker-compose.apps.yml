@@ -71,7 +71,7 @@ services:
       MYSQL_PASSWORD: "mempool"
       MYSQL_ROOT_PASSWORD: "admin"
     volumes:
-      - ./data:/var/lib/mysql
+      - ./shared:/var/lib/mysql
     networks:
       lbnet:
         aliases:

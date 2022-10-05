@@ -1,4 +1,4 @@
-# Docker setup for LNPBP Nodes (Bitcoin, LNP & RGB) in regtest mode
+# Unofficial LNPBP Stack and ecosystem in regtest mode
 
 ### ONLY FOR DEVELOPMENT and TESTING. These tools may not be suitable for production deployments.
 
@@ -33,18 +33,18 @@ cargo install descriptor-wallet --version "0.8.2" --all-features --locked
 ### Start Nodes
 
 
-### _Running L1_ 
+### _Running L1_
 
 ```bash
 # 1- Up and running nodes
-docker-compose up -d node1 node2 electrs
+docker-compose up -d electrs node1 node2
 
 # 2- Connect nodes
 b01 addnode node2:18444 onetry
 b02 addnode node1:18444 onetry
 
 # 2- Generate and/or Load wallets
-# CHANGE HERE > https://gist.github.com/pinheadmz/cbf419396ac983ffead9670dde258a43
+# TODO: https://gist.github.com/pinheadmz/cbf419396ac983ffead9670dde258a43
 b01 -named createwallet wallet_name='alpha' descriptors=true # or  b01 loadwallet alpha
 b02 -named createwallet wallet_name='beta' descriptors=true # or  b02 loadwallet beta
 
@@ -54,7 +54,7 @@ addr2=$(b02 -rpcwallet=beta getnewaddress)
 
 # 4- Mine new blocks
 b01 -rpcwallet=alpha settxfee 0.00001
-b02 -rpcwallet=beta settxfee 0.00001 
+b02 -rpcwallet=beta settxfee 0.00001
 
 b01 generatetoaddress 500 $(echo $addr1)
 b02 generatetoaddress 500 $(echo $addr2)
@@ -94,9 +94,9 @@ lnpd2 init # tprv8ZgxMBicQKsPdXjTY8BuF4WPhEhfGELSMiZM1XfLNcR2hka3wTKPqakbpMDHedY
 docker-compose up -d lnp1 lnp2
 
 # 3- Connect nodes
-lnp1_ip='172.20.0.8'  
-lnp1_port='9997'  
-lnp2_ip='172.20.0.10' 
+lnp1_ip='172.20.0.8'
+lnp1_port='9997'
+lnp2_ip='172.20.0.10'
 lnp2_port='9998'
 
 lnp01 listen --bifrost -p $lnp1_port
@@ -126,8 +126,8 @@ docker-compose up -d rgb1 rgb2
 txid='...' #example (issuer transaction)
 vout='...' #example (issuer vout)
 
-ticker="USDT"
-name="Tether Stablecoin"
+ticker="RGB20"
+name="The Most Honest Token"
 amount="1000"
 allocation="$amount@$txid:$vout"
 
@@ -179,8 +179,8 @@ rgb01 transfer finalize --endseal $seal_definition /var/lib/rgb/fungible.psbt /v
 rgbstd1 consignment validate /var/lib/rgb/fungible.rgbc "$electrum_host:$electrum_port"
 
 # 6- Check Transfer (After Sign PSBT**)
-rgbstd1 consignment validate /var/lib/rgb/fungible.rgbc "$electrum_host:$electrum_port"
 b01 generatetoaddress 1 $(echo $addr1)
+rgbstd1 consignment validate /var/lib/rgb/fungible.rgbc "$electrum_host:$electrum_port"
 
 # 7- Consume Transfer
 rgb01 transfer consume /var/lib/rgb/fungible.rgbc
@@ -207,8 +207,8 @@ echo $wl > ./wallets/regtest.desc
 echo $wl2 > ./wallets/regtest.desc2
 
 # 3- Generate Wallets
-btc-cold create --regtest ./wallets/regtest.desc ./wallets/regtest.wallet -e $electrum_host -p $electrum_port
-btc-cold create --regtest ./wallets/regtest.desc2 ./wallets/regtest.wallet2 -e $electrum_host -p $electrum_port
+btc-cold create ./wallets/regtest.desc ./wallets/regtest.wallet -e $electrum_host -p $electrum_port
+btc-cold create ./wallets/regtest.desc2 ./wallets/regtest.wallet2 -e $electrum_host -p $electrum_port
 
 # 4- Get Issue and Change Address
 btc-cold address ./wallets/regtest.wallet -e $electrum_host -p $electrum_port
@@ -225,9 +225,7 @@ receiveaddr="tb1p..."
 ```bash
 # 1- Construct PSBT (Retrieve UTXO)
 fee=1000
-change_addr="$issueaddr:99000" # Avoid "burn bitcoin" (PROVABLY_UNSPENDABLE problem)
-btc-cold check ./wallets/regtest.wallet -e $electrum_host -p $electrum_port
-btc-cold construct --input "$txid:$vout /0/0" --allow-tapret-path 1 ./wallets/regtest.wallet ./wallets/fungible.psbt2 -e $electrum_host -p $electrum_port $fee --output $change_addr
+btc-cold construct --input "$txid:$vout /0/0" --allow-tapret-path 1 ./wallets/regtest.wallet ./wallets/fungible.psbt -e $electrum_host -p $electrum_port $fee
 ```
 
 ### _Bonus: Sign and Publish PSBT_
@@ -239,5 +237,4 @@ btc-hot sign ./wallets/fungible.sign ./wallets/regtest.tr
 
 # 2- Send PSBT transaction
 btc-cold finalize --publish regtest ./wallets/fungible.sign -e $electrum_host -p $electrum_port
-
 ```

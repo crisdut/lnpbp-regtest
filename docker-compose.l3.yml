@@ -74,7 +74,7 @@ services:
     volumes:
       - store1_data:/var/lib/store
     ports:
-      - ${STORE_RPC_PORT}:${STORE_RPC_PORT}            
+      - ${STORE_RPC_PORT}:${STORE_RPC_PORT}
     expose: [60960, 64964]
     networks:
       lbnet:
@@ -90,7 +90,7 @@ services:
       - store2_data:/var/lib/store
     expose: [60960, 64964]
     ports:
-      - ${STORE_ALT_RPC_PORT}:${STORE_RPC_PORT}    
+      - ${STORE_ALT_RPC_PORT}:${STORE_RPC_PORT}
     networks:
       lbnet:
         ipv4_address: 172.20.0.24
@@ -111,7 +111,7 @@ services:
         "--threaded",
       ]
     volumes:
-      - storm1_data:/var/lib/storm   
+      - storm1_data:/var/lib/storm
     expose: [9999, 40940, 64964, 64965]
     networks:
       lbnet:
@@ -125,7 +125,7 @@ services:
     command:
       [
         "-vvvv",
-        "--ext-endpoint=0.0.0.0:${STORM_EXT_PORT}",        
+        "--ext-endpoint=0.0.0.0:${STORM_EXT_PORT}",
         "--store-endpoint=${STORE_HOST_2}:${STORE_RPC_PORT}",
         "--msg=${LNP_IP_2}:${LNP_MSG_PORT}",
         "--chat",
