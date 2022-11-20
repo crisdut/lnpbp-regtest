@@ -20,7 +20,7 @@ RUN apt-get update -qq && \
         libevent-dev \
         libpq-dev \
         libtool \
-        libffi-dev \        
+        libffi-dev \
         libsqlite3-dev \
         libboost-dev \
         libboost-chrono-dev libboost-filesystem-dev libboost-program-options-dev libboost-system-dev \
