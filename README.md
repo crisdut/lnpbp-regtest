@@ -27,7 +27,7 @@ source .commands
 
 ### _Install Wallet Descriptor and DBC_
 ```bash
-cargo install descriptor-wallet --version "0.8.2" --all-features --locked
+cargo install descriptor-wallet --version "0.8.3" --all-features --locked
 ```
 
 ### Start Nodes
@@ -91,9 +91,9 @@ lnpd1 init # tprv8gD6szk1Vr8Bm3dY4wpxodYwkZihHM8XLWypXiUTcuQamaMwUHKDoJZJfjY3kCC
 lnpd2 init # tprv8ZgxMBicQKsPdXjTY8BuF4WPhEhfGELSMiZM1XfLNcR2hka3wTKPqakbpMDHedYaRBJwPBeADqRnGPNHGCuqk9FUVmj5fJrzvbnoQPoTTTN
 
 # 2- Up and running nodes
-docker-compose up -d lnp1 lnp2
+docker-compose up -d lnp1 lnp2 cln1 cln2
 
-# 3- Connect nodes
+# 3- Connect nodes (Bifrost)
 lnp1_ip='172.20.0.8'
 lnp1_port='9997'
 lnp2_ip='172.20.0.10'
@@ -105,9 +105,32 @@ lnp02 listen --bifrost -p $lnp2_port
 lnp02 info --bifrost # get pb2
 lnp01 connect "bifrost://$pb2@$lnp2_ip:$lnp2_port"
 
-# 4 - Check peers
+# 4- Connect nodes (Bolt)
+lnp1_ip='172.20.0.8'
+lnp1_port='9735'
+cln1_ip='172.20.0.12'
+cln1_port='19755'
+cln2_ip='172.20.0.30'
+cln2_port='19755'
+
+lnp01 listen --bolt -p $lnp1_port
+
+cln01 getinfo # get pb3
+lnp01 connect "bolt://$pb3@$cln1_ip:$cln1_port"
+
+# 5 - Check peers
 lnp01 peers
 lnp02 peers
+cln01 listpeers
+
+# 6 - Add funding address
+lnp01 funds
+cln01 listfunds
+b01 generatetoaddress 10 $(echo $addr1)
+
+# 7 - Create a channel (Bolt)
+lnp01 open "$pb3@$cln1_ip:$cln1_port" 10000
+cln01 fundchannel $pb1 10000
 
 ```
 ### _Running L3_

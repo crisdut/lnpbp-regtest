@@ -13,6 +13,7 @@ alias stormd1="docker-compose run --rm storm1"
 alias stormd2="docker-compose run --rm storm2"
 
 alias cln01="docker-compose exec cln1 lightning-cli --network=regtest"
+alias cln02="docker-compose exec cln2 lightning-cli --network=regtest"
 
 alias node1="docker-compose exec -T esplora cli"
 alias esplora1="docker-compose exec -T esplora cli"
