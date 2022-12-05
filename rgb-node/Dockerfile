@@ -11,13 +11,14 @@ RUN cargo install rgb20 --version "=0.8.0" \
         --debug --locked --all-features --root "${BUILDER_DIR}"
 
 RUN cargo install rgb_node --version "=0.8.1" \
-        --locked --all-features --root "${BUILDER_DIR}"
+        --debug --locked --all-features --root "${BUILDER_DIR}"
 
 RUN cargo install rgb-cli --version "=0.8.1" \
-        --locked --all-features --root "${BUILDER_DIR}"
+        --debug --locked --all-features --root "${BUILDER_DIR}"
 
 RUN cargo install rgb-std --version "=0.8.1" \
         --debug --locked --all-features --root "${BUILDER_DIR}"
+
 # WORKDIR $BUILDER_SOURCE
 # RUN git clone $SOURCE_CODE $BUILDER_SOURCE
 # RUN git checkout $VERSION

@@ -3,7 +3,7 @@ FROM debian:buster-slim as bitcoin-builder
 ARG SOURCE_CODE=https://github.com/crisdut/bitcoin.git
 ARG BUILDER_SOURCE=/opt/src
 ARG BUILDER_DIR=/opt/bitcoin
-ARG BITCOIN_VERSION=v23.0rc2
+ARG BITCOIN_VERSION=v24.0
 
 RUN apt-get update -qq && \
     apt-get install -qq -y --no-install-recommends \
@@ -63,7 +63,7 @@ ENV BUILDER_DIR=/opt/lightning
 
 ENV DEVELOPER=0
 ENV PYTHON_VERSION=3
-ENV LIGHTNING_VERSION=v0.11.1
+ENV LIGHTNING_VERSION=v22.11
 
 RUN apt-get update -qq && \
     apt-get install -qq -y --no-install-recommends \
@@ -87,12 +87,12 @@ RUN apt-get update -qq && \
         python3-setuptools \
         wget
 
-RUN wget -q https://zlib.net/zlib-1.2.12.tar.gz \
-&& tar xvf zlib-1.2.12.tar.gz \
-&& cd zlib-1.2.12 \
+RUN wget -q https://zlib.net/zlib-1.2.13.tar.gz \
+&& tar xvf zlib-1.2.13.tar.gz \
+&& cd zlib-1.2.13 \
 && ./configure \
 && make \
-&& make install && cd .. && rm zlib-1.2.12.tar.gz && rm -rf zlib-1.2.12
+&& make install && cd .. && rm zlib-1.2.13.tar.gz && rm -rf zlib-1.2.13
 
 RUN apt-get install -y --no-install-recommends unzip tclsh \
 && wget -q https://www.sqlite.org/2019/sqlite-src-3290000.zip \
@@ -120,10 +120,11 @@ RUN git submodule update --init --recursive
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python3 - \
     && pip3 install -U pip \
     && pip3 install -U wheel \
+    && pip3 install -U mako Mako \
     && /root/.local/bin/poetry config virtualenvs.create false \
     && /root/.local/bin/poetry install
 
-RUN ./configure --prefix=${BUILDER_DIR} --enable-static 
+RUN ./configure --prefix=${BUILDER_DIR} --enable-static
 RUN make -j "$(($(nproc)+1))" DEVELOPER=${DEVELOPER}
 RUN make install
 

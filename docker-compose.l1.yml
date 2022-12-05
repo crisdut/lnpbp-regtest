@@ -11,8 +11,6 @@ networks:
 volumes:
   node1_data:
   node2_data:
-  electrs_data:
-  esplora_data:
 
 services:
   node1:
@@ -101,47 +99,3 @@ services:
         aliases:
           - ${BITCOIN_HOST_2}
 
-  electrs:
-    container_name: electrs
-    image: sr/electrs:latest
-    build:
-      context: ./electrs/
-    restart: unless-stopped
-    command:
-      [
-        "--timestamp",
-        "--network=regtest",
-        "--db-dir=/var/lib/electrs/db",
-        "--electrum-rpc-addr=0.0.0.0:${ELECTRS_PORT}",
-        "--daemon-p2p-addr=node1:${BITCOIN_PORT}",
-        "--daemon-rpc-addr=node1:${BITCOIN_RPC_PORT}",
-      ]
-    volumes:
-      - electrs_data:/home/electrs
-    depends_on:
-      - node1
-    ports:
-      - ${ELECTRS_PORT}:${ELECTRS_PORT}
-    networks:
-      lbnet:
-        ipv4_address: 172.20.0.22
-        aliases:
-          - ${ELECTRS_HOST}
-
-  esplora:
-    container_name: esplora
-    image: sr/esplora:latest
-    build:
-      context: ./esplora/
-    restart: unless-stopped
-    command: ["/srv/explorer/run.sh", "bitcoin-regtest", "explorer"]
-    volumes:
-      - esplora_data:/data
-    ports:
-      - ${ESPLORA_PORT}:${ESPLORA_PORT}
-      - ${ESPLORA_REST}:80
-    networks:
-      lbnet:
-        ipv4_address: 172.20.0.32
-        aliases:
-          - ${ESPLORA_HOST}
