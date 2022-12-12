@@ -1,8 +1,8 @@
 FROM rust:1.61.0-slim-buster as builder
 ARG BUILDER_SOURCE=/opt/src/lnp
 ARG BUILDER_DIR=/srv/lnp
-ARG SOURCE_CODE=https://github.com/crisdut/lnp-node.git
-ARG VERSION=release/minors 
+ARG SOURCE_CODE=https://github.com/LNP-WG/lnp-node.git
+ARG VERSION=master
 
 RUN apt-get update && apt-get install -y build-essential git
 

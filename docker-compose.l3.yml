@@ -72,7 +72,9 @@ services:
       context: ./stored-node/
     restart: unless-stopped
     volumes:
-      - store1_data:/var/lib/store      
+      - store1_data:/var/lib/store
+    ports:
+      - ${STORE_RPC_PORT}:${STORE_RPC_PORT}
     expose: [60960, 64964]
     networks:
       lbnet:
@@ -87,6 +89,8 @@ services:
     volumes:
       - store2_data:/var/lib/store
     expose: [60960, 64964]
+    ports:
+      - ${STORE_ALT_RPC_PORT}:${STORE_RPC_PORT}
     networks:
       lbnet:
         ipv4_address: 172.20.0.24
@@ -121,7 +125,7 @@ services:
     command:
       [
         "-vvvv",
-        "--ext-endpoint=0.0.0.0:${STORM_EXT_PORT}",        
+        "--ext-endpoint=0.0.0.0:${STORM_EXT_PORT}",
         "--store-endpoint=${STORE_HOST_2}:${STORE_RPC_PORT}",
         "--msg=${LNP_IP_2}:${LNP_MSG_PORT}",
         "--chat",

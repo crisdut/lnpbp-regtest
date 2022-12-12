@@ -1,6 +1,7 @@
 version: "3.7"
 volumes:
   cln1_data:
+  cln2_data:
   lnp1_data:
   lnp2_data:
 
@@ -27,6 +28,9 @@ services:
     volumes:
       - lnp1_data:/var/lib/lnp
     expose: [9997, 9998, 9999, 9735, 62960, 62961, 62962]
+    ports:
+      - ${LNP_PORT}:${LNP_PORT}
+      - ${LNP_MSG_PORT}:${LNP_MSG_PORT}
     networks:
       lbnet:
         ipv4_address: 172.20.0.8
@@ -54,7 +58,9 @@ services:
       - electrs
     volumes:
       - lnp2_data:/var/lib/lnp
-    expose: [9997, 9998, 9735, 62960, 62961, 62962]  
+    expose: [9997, 9998, 9999, 9735, 62960, 62961, 62962]
+    ports:
+      - ${LNP_ALT_MSG_PORT}:${LNP_MSG_PORT}
     networks:
       lbnet:
         ipv4_address: 172.20.0.10
@@ -67,6 +73,7 @@ services:
     build:
       context: ./clightning/
     restart: unless-stopped
+    expose: [9735, 19755]
     command:
       [
         "--alias=${CLN_HOST_1}",
@@ -88,3 +95,32 @@ services:
           - ${CLN_HOST_1}
     volumes:
       - cln1_data:/root/.lightning
+
+  cln2:
+    container_name: cln2
+    image: sr/cln:latest
+    build:
+      context: ./clightning/
+    restart: unless-stopped
+    expose: [9735, 19755]
+    command:
+      [
+        "--alias=${CLN_HOST_1}",
+        "--network=regtest",
+        "--large-channels",
+        "--addr=0.0.0.0:${CLN_PORT}",
+        "--bitcoin-cli=/opt/bitcoin/bin/bitcoin-cli",
+        "--bitcoin-rpcconnect=${BITCOIN_HOST_1}",
+        "--bitcoin-rpcport=${BITCOIN_RPC_PORT}",
+        "--bitcoin-rpcuser=${BITCOIN_RPC_USER}",
+        "--bitcoin-rpcpassword=${BITCOIN_RPC_PASSWORD}",
+      ]
+    depends_on:
+      - node1
+    networks:
+      lbnet:
+        ipv4_address: 172.20.0.30
+        aliases:
+          - ${CLN_HOST_2}
+    volumes:
+      - cln2_data:/root/.lightning
