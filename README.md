@@ -9,6 +9,21 @@
 - All nodes will sync to chain after the first Bitcoin regtest blocks are generated.
 - Ports and other daemon configuration can be changed in the `.env` and `docker-compose.yml` files.
 
+### Supported Nodes and Libs
+* Bitcoin Core v24
+* Core Lightning v22.11
+* Electrs v0.9.10
+* Esplora v2.10 (Bitcoin Core v22)
+* BP Node v0.8.0
+* RGB Node v0.8.1
+* LNP Node v0.8.0
+* Store Node v0.8.0
+* Storm Node v0.8.0
+* RGB Std v0.8.1
+* RGB 20 v0.8.0
+* RGB 121 v0.1.0
+
+
 ### Instructions
 
 - Generate a individual docker image to each node.
@@ -140,19 +155,28 @@ docker-compose up -d storm1 storm2
 docker-compose up -d rgb1 rgb2
 ```
 
-### _Create Issue_
+### _Create Asset_
 
 ```bash
-# 1- Generate
+# 1- Get Issue Outpoint
 txid='...' #example (issuer transaction)
 vout='...' #example (issuer vout)
 
+# 2.a - Generate a Fungible Token
 ticker="RGB20"
 name="The Most Honest Token"
 amount="1000"
 allocation="$amount@$txid:$vout"
 
 fungible1 issue "$ticker" "$name" "$allocation"
+
+# 2.b - Generate a Collectible Token
+ticker="RGB21"
+name="The Most Honest NFT"
+amount="1"
+allocation="$amount@$txid:$vout"
+
+collectible1 issue "$ticker" "$name" "$allocation"
 # Output=> $contractID="rgb1..."
 # Output=> $contract="rgbc1..."
 
@@ -232,13 +256,13 @@ btc-cold create ./wallets/regtest.desc ./wallets/regtest.wallet -e $electrum_hos
 btc-cold create ./wallets/regtest.desc2 ./wallets/regtest.wallet2 -e $electrum_host -p $electrum_port
 
 # 4- Get Issue and Change Address
-btc-cold address ./wallets/regtest.wallet -e $electrum_host -p $electrum_port
-issueaddr="tb1p..."
-changeaddr="tb1p..."
+btc-cold address --regtest ./wallets/regtest.wallet -e $electrum_host -p $electrum_port
+issueaddr="bcrt1..."
+changeaddr="bcrt1..."
 
 # 5- Get Receive Address
-btc-cold address ./wallets/regtest.wallet2  -e $electrum_host -p $electrum_port
-receiveaddr="tb1p..."
+btc-cold address --regtest ./wallets/regtest.wallet2  -e $electrum_host -p $electrum_port
+receiveaddr="bcrt1..."
 ```
 
 ### _Bonus: Create PSBT_
