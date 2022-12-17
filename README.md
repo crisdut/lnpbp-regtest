@@ -38,10 +38,8 @@ cargo install descriptor-wallet --version "0.8.3" --all-features --locked
 ```bash
 # 1- Up and running nodes
 docker-compose up -d electrs node1 node2
-
-# 2- Connect nodes
-b01 addnode node2:18444 onetry
-b02 addnode node1:18444 onetry
+# b01 addnode node2:18444 onetry
+# b02 addnode node1:18444 onetry
 
 # 2- Generate and/or Load wallets
 # TODO: https://gist.github.com/pinheadmz/cbf419396ac983ffead9670dde258a43
