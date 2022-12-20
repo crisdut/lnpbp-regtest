@@ -10,10 +10,10 @@ WORKDIR $BUILDER_DIR
 RUN cargo install rgb20 --version "=0.8.0" \
         --debug --locked --all-features --root "${BUILDER_DIR}"
 
-RUN cargo install rgb_node --version "=0.8.1" \
+RUN cargo install rgb_node --version "=0.8.2" \
         --debug --locked --all-features --root "${BUILDER_DIR}"
 
-RUN cargo install rgb-cli --version "=0.8.1" \
+RUN cargo install rgb-cli --version "=0.8.2" \
         --debug --locked --all-features --root "${BUILDER_DIR}"
 
 RUN cargo install rgb-std --version "=0.8.1" \
