@@ -15,7 +15,7 @@
 * Electrs v0.9.10
 * Esplora v2.10 (Bitcoin Core v22)
 * BP Node v0.8.0
-* RGB Node v0.8.1
+* RGB Node v0.8.2
 * LNP Node v0.8.0
 * Store Node v0.8.0
 * Storm Node v0.8.0
