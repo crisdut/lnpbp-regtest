@@ -205,8 +205,8 @@ change_vout='...' #example (change address vout)
 atomic_value=990
 change_value="$atomic_value@tapret1st:$change_txid:$change_vout"
 spent_value="10@$seal_definition"
-
-fungible1 transfer --utxo "$txid:$vout" --change $change_value /var/lib/rgb/fungible.rgbc $spent_value /var/lib/rgb/fungible.rgbt
+# TODO: 1-N
+fungible1 transfer --utxo "$txid:$vout" /var/lib/rgb/fungible.rgbc $spent_value /var/lib/rgb/fungible.rgbt --change $change_value
 
 # 3- Transfer Asset (After Create PSBT**)
 # docker cp ./wallets/fungible.psbt [DOCKER_CONTAINER_ID]:/var/lib/rgb/  <--- for docker noobs =)
@@ -220,7 +220,8 @@ rgbstd1 psbt analyze /var/lib/rgb/fungible.psbt
 # 5- Make a Transfer
 lnp_storm_ip=172.20.0.20
 lnp_storm_port=64964
-rgb01 transfer finalize --endseal $seal_definition /var/lib/rgb/fungible.psbt /var/lib/rgb/fungible.rgbc --send "$pb2@$lnp_storm_ip:$lnp_storm_port"
+# TODO: 1-N
+rgb01 transfer finalize /var/lib/rgb/fungible.psbt /var/lib/rgb/fungible.rgbc --endseal $seal_definition --send "$pb2@$lnp_storm_ip:$lnp_storm_port"
 rgbstd1 consignment validate /var/lib/rgb/fungible.rgbc "$electrum_host:$electrum_port"
 
 # 6- Check Transfer (After Sign PSBT**)
@@ -231,7 +232,8 @@ rgbstd1 consignment validate /var/lib/rgb/fungible.rgbc "$electrum_host:$electru
 rgb01 transfer consume /var/lib/rgb/fungible.rgbc
 
 # 8- Reveal Transfer
-rgb02 transfer consume /var/lib/rgb/fungible.rgbc --reveal "tapret1st@$receive_txid:$receive_vout#$blind_factor"
+# TODO: 1-N
+rgb01 transfer consume /var/lib/rgb/fungible.rgbc --reveal "tapret1st@$receive_txid:$receive_vout#$blind_factor"
 ```
 
 ### _Bonus: Create Wallets_

@@ -1,17 +1,17 @@
 FROM rust:1.61.0-slim-buster as builder
+# ARG SOURCE_CODE=https://github.com/crisdut/storm-node.git
+# ARG BUILDER_SOURCE=/opt/src/storm
 ARG BUILDER_DIR=/srv/storm
-ARG BUILDER_SOURCE=/opt/src/storm
-ARG SOURCE_CODE=https://github.com/crisdut/storm-node.git
-ARG VERSION=master
+# ARG VERSION=master
 
 RUN apt-get update && apt-get install -y build-essential git
 
 WORKDIR $BUILDER_DIR
-RUN cargo install storm_node --version "=0.8.0" \
+RUN cargo install storm_node --version "=0.9.0-rc.1" \
         --debug --locked --all-features --root "${BUILDER_DIR}"
 
 WORKDIR $BUILDER_DIR
-RUN cargo install storm-cli --version "=0.8.0" \
+RUN cargo install storm-cli --version "=0.9.0-rc.1" \
         --debug --locked --all-features --root "${BUILDER_DIR}"
 
 # WORKDIR $BUILDER_SOURCE
