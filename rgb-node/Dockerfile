@@ -7,16 +7,16 @@ ARG VERSION=master
 RUN apt-get update && apt-get install -y build-essential git
 
 WORKDIR $BUILDER_DIR
-RUN cargo install rgb20 --version "=0.8.0" \
+RUN cargo install rgb20 --version "=0.9.0-rc.1" \
         --debug --locked --all-features --root "${BUILDER_DIR}"
 
-RUN cargo install rgb_node --version "=0.8.2" \
+RUN cargo install rgb_node --version "=0.9.0-rc.1" \
         --debug --locked --all-features --root "${BUILDER_DIR}"
 
-RUN cargo install rgb-cli --version "=0.8.2" \
+RUN cargo install rgb-cli --version "=0.9.0-rc.1" \
         --debug --locked --all-features --root "${BUILDER_DIR}"
 
-RUN cargo install rgb-std --version "=0.8.1" \
+RUN cargo install rgb-std --version "=0.9.0-rc.1" \
         --debug --locked --all-features --root "${BUILDER_DIR}"
 
 WORKDIR $BUILDER_SOURCE

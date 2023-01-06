@@ -1,22 +1,22 @@
 FROM rust:1.61.0-slim-buster as builder
-ARG BUILDER_SOURCE=/opt/src/lnp
+# ARG SOURCE_CODE=https://github.com/LNP-WG/lnp-node.git
+# ARG BUILDER_SOURCE=/opt/src/lnp
 ARG BUILDER_DIR=/srv/lnp
-ARG SOURCE_CODE=https://github.com/LNP-WG/lnp-node.git
-ARG VERSION=master
+# ARG VERSION=master
 
 RUN apt-get update && apt-get install -y build-essential git
 
 WORKDIR $BUILDER_DIR
-# RUN cargo install lnp_node --version "=0.8.0" \
-#         --debug --locked --all-features --root "${BUILDER_DIR}"
+RUN cargo install lnp_node --version "=0.9.0-rc.1" \
+        --debug --locked --all-features --root "${BUILDER_DIR}"
 
-# RUN cargo install lnp-cli --version "=0.8.0" \
-#         --debug --locked --all-features --root "${BUILDER_DIR}"
+RUN cargo install lnp-cli --version "=0.9.0-rc.1" \
+        --debug --locked --all-features --root "${BUILDER_DIR}"
 
-WORKDIR $BUILDER_SOURCE
-RUN git clone $SOURCE_CODE $BUILDER_SOURCE
-RUN git checkout $VERSION
-RUN cargo install --locked --debug --all-features --path . --root ${BUILDER_DIR}
+# WORKDIR $BUILDER_SOURCE
+# RUN git clone $SOURCE_CODE $BUILDER_SOURCE
+# RUN git checkout $VERSION
+# RUN cargo install --locked --debug --all-features --path . --root ${BUILDER_DIR}
 
 # Runtime
 FROM rust:1.61.0-slim-buster as runtime
