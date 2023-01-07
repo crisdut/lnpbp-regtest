@@ -66,7 +66,7 @@ services:
     volumes:
       - node2_data:/data
     ports:
-      - ${ELECTRS_PORT}:${ELECTRS_PORT}
+      - ${ELECTRS_ALT_PORT}:${ELECTRS_PORT}
       - ${ESPLORA_PORT}:${ESPLORA_PORT}
       - ${ESPLORA_REST}:80
     networks:

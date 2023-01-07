@@ -23,7 +23,7 @@ services:
     depends_on:
       - node1
     ports:
-      - ${ELECTRS_ALT_PORT}:${ELECTRS_PORT}
+      - ${ELECTRS_PORT}:${ELECTRS_PORT}
     networks:
       lbnet:
         ipv4_address: 172.20.0.22
