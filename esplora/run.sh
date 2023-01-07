@@ -264,7 +264,7 @@ chmod +x /etc/service/${DAEMON}/run
 
 if [ "${NETWORK}" == "regtest" ] && [ -z "${NO_REGTEST_MINING}" ]; then
     if [ "${DAEMON}" != "liquid" ]; then
-        /srv/explorer/bitcoin/bin/bitcoind -conf=/data/.xbitcoin.conf -datadir=/data/bitcoin -daemon -regtest=1 -acceptnonstdtxn=1 -txindex=1 -connect=node1:18443
+        /srv/explorer/bitcoin/bin/bitcoind -conf=/data/.xbitcoin.conf -datadir=/data/bitcoin -daemon -regtest=1 -acceptnonstdtxn=1 -txindex=1
     else
         /srv/explorer/$DAEMON/bin/${DAEMON}d -conf=/data/.$DAEMON.conf -datadir=/data/$DAEMON -daemon
     fi

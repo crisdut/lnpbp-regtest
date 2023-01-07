@@ -73,13 +73,12 @@ services:
     build:
       context: ./clightning/
     restart: unless-stopped
-    expose: [9735, 19755]
+    expose: [9735, 19735, 19846]
     command:
       [
         "--alias=${CLN_HOST_1}",
         "--network=regtest",
         "--large-channels",
-        "--addr=0.0.0.0:${CLN_PORT}",
         "--bitcoin-cli=/opt/bitcoin/bin/bitcoin-cli",
         "--bitcoin-rpcconnect=${BITCOIN_HOST_1}",
         "--bitcoin-rpcport=${BITCOIN_RPC_PORT}",
@@ -102,13 +101,12 @@ services:
     build:
       context: ./clightning/
     restart: unless-stopped
-    expose: [9735, 19755]
+    expose: [9735, 19735, 19846]
     command:
       [
-        "--alias=${CLN_HOST_1}",
+        "--alias=${CLN_HOST_2}",
         "--network=regtest",
         "--large-channels",
-        "--addr=0.0.0.0:${CLN_PORT}",
         "--bitcoin-cli=/opt/bitcoin/bin/bitcoin-cli",
         "--bitcoin-rpcconnect=${BITCOIN_HOST_1}",
         "--bitcoin-rpcport=${BITCOIN_RPC_PORT}",
