@@ -71,14 +71,14 @@ change_value="$atomic_value@tapret1st:$bob_change_txid:$bob_change_vout"
 spent_value="10@$bob_seal"
 
 
-fungible1 transfer --utxo "$txid:$vout" /var/lib/rgb/bob.rgbc $spent_value /var/lib/rgb/bob.rgbt --change $change_value
+fungible1 transfer --utxo "$bob_txid:$bob_vout" /var/lib/rgb/bob.rgbc $spent_value /var/lib/rgb/bob.rgbt --change $change_value
 
 atomic_value=1
 change_value="$atomic_value@tapret1st:$alice_change_txid:$alice_change_vout"
 spent_value="0@$alice_seal"
 
 
-collectible1 transfer --utxo "$txid:$vout" /var/lib/rgb/alice.rgbc $spent_value /var/lib/rgb/alice.rgbt --change $change_value
+collectible1 transfer --utxo "$alice_txid:$alice_vout" /var/lib/rgb/alice.rgbc $spent_value /var/lib/rgb/alice.rgbt --change $change_value
 
 # 3- Transfer Asset (After Create PSBT**)
 # docker cp ./wallets/atomic.psbt [DOCKER_CONTAINER_ID]:/var/lib/rgb/  <--- for docker noobs =)
