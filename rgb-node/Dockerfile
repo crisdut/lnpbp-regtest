@@ -1,4 +1,30 @@
-FROM rust:1.61.0-slim-buster as builder
+FROM rust:1.61.0-slim-buster as builder_node
+ARG SOURCE_CODE=https://github.com/crisdut/rgb-node.git
+ARG BUILDER_SOURCE=/opt/src/rgb
+ARG BUILDER_DIR=/srv/rgb
+ARG VERSION=feat/cli-transfers
+
+RUN apt-get update && apt-get install -y build-essential git
+
+WORKDIR $BUILDER_SOURCE
+RUN git clone $SOURCE_CODE $BUILDER_SOURCE
+RUN git checkout $VERSION
+RUN cargo install --locked --debug --all-features --path . --root ${BUILDER_DIR}
+
+FROM rust:1.61.0-slim-buster as builder_std
+ARG SOURCE_CODE=https://github.com/crisdut/rgb-std.git
+ARG BUILDER_SOURCE=/opt/src/rgb
+ARG BUILDER_DIR=/srv/rgb
+ARG VERSION=feat/psbt-utils
+
+RUN apt-get update && apt-get install -y build-essential git
+
+WORKDIR $BUILDER_SOURCE
+RUN git clone $SOURCE_CODE $BUILDER_SOURCE
+RUN git checkout $VERSION
+RUN cargo install --locked --debug --all-features --path . --root ${BUILDER_DIR}
+
+FROM rust:1.61.0-slim-buster as builder_assets
 ARG SOURCE_CODE=https://github.com/crisdut/rust-rgb121.git
 ARG BUILDER_SOURCE=/opt/src/rgb
 ARG BUILDER_DIR=/srv/rgb
@@ -8,15 +34,6 @@ RUN apt-get update && apt-get install -y build-essential git
 
 WORKDIR $BUILDER_DIR
 RUN cargo install rgb20 --version "=0.9.0-rc.1" \
-        --debug --locked --all-features --root "${BUILDER_DIR}"
-
-RUN cargo install rgb_node --version "=0.9.0-rc.1" \
-        --debug --locked --all-features --root "${BUILDER_DIR}"
-
-RUN cargo install rgb-cli --version "=0.9.0-rc.1" \
-        --debug --locked --all-features --root "${BUILDER_DIR}"
-
-RUN cargo install rgb-std --version "=0.9.0-rc.1" \
         --debug --locked --all-features --root "${BUILDER_DIR}"
 
 WORKDIR $BUILDER_SOURCE
@@ -39,7 +56,11 @@ RUN adduser --home "${DATA_DIR}" --shell /bin/bash --disabled-login \
 USER ${USER}
 WORKDIR "${BIN_DIR}"
 
-COPY --from=builder --chown=${USER}:${USER} \
+COPY --from=builder_node --chown=${USER}:${USER} \
+     "${BUILDER_DIR}/bin/" "${BIN_DIR}/"
+COPY --from=builder_std --chown=${USER}:${USER} \
+     "${BUILDER_DIR}/bin/" "${BIN_DIR}/"
+COPY --from=builder_assets --chown=${USER}:${USER} \
      "${BUILDER_DIR}/bin/" "${BIN_DIR}/"
 
 VOLUME "$DATA_DIR"
