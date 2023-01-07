@@ -57,7 +57,7 @@ services:
           - ${BITCOIN_HOST_1}
 
   node2:
-    container_name: esplora
+    container_name: node2
     image: sr/esplora:latest
     build:
       context: ./esplora/
