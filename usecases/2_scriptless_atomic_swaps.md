@@ -3,7 +3,6 @@
 Based on RGB workgroup discussion:
 https://github.com/orgs/LNP-BP/discussions/125
 
-
 ### _Create Asset_
 
 ```bash
@@ -57,16 +56,17 @@ btc-cold construct --input "$alice_txid:$alice_vout /0/0" --allow-tapret-path 1 
 
 # 3- Get Base64 PSBT
 bob_psbt64=$(rgbstd1 psbt convert $bob_psbt58 -o base64)
-alice_psbt64=$(rgbstd1 psbt convert $bob_psbt58 -o base64)
+alice_psbt64=$(rgbstd1 psbt convert $alice_psbt58 -o base64)
 
 # 4- Join PSBTs
 atomic_psbt64=$(b01 joinpsbts '["'$bob_psbt64'", "'$alice_psbt64'"]')
 
 # 5- Save new PSBT
-rgbstd1 psbt save "atomic_psbt64" /var/lib/rgb/atomic.psbt
+rgbstd1 psbt save $atomic_psbt64 /var/lib/rgb/atomic.psbt
 ```
 
 ### _Create Transitions_
+
 ```bash
 # 1- Prepare Consignment (State Transfer)
 rgb01 transfer compose $contractIDB $bob_txid:$bob_vout /var/lib/rgb/bob.rgbc
@@ -102,22 +102,24 @@ rgbstd1 psbt bundle /var/lib/rgb/atomic.psbt
 rgbstd1 psbt analyze /var/lib/rgb/atomic.psbt
 
 # 5- Make a Transfer
-rgb01 transfer finalize /var/lib/rgb/atomic.psbt --endseal $bob_seal:/var/lib/rgb/bob.rgbc --endseal $alice_seal:/var/lib/rgb/alice.rgbc
-rgbstd1 consignment validate /var/lib/rgb/fungible.rgbc "$electrum_host:$electrum_port"
+rgb01 transfer finalize /var/lib/rgb/atomic.psbt --endseal "$bob_seal:/var/lib/rgb/bob.rgbc" --endseal "$alice_seal:/var/lib/rgb/alice.rgbc"
+
+rgbstd1 consignment validate /var/lib/rgb/bob.rgbc "$electrum_host:$electrum_port"
+rgbstd1 consignment validate /var/lib/rgb/alice.rgbc "$electrum_host:$electrum_port"
 
 # 6- Sign the PSBT
+# docker cp [DOCKER_CONTAINER_ID]:/var/lib/rgb/atomic.psbt ./wallets/atomic.sign   <--- for docker noobs =)
 btc-hot sign ./wallets/atomic.sign ./wallets/alice.tr
+btc-hot sign ./wallets/atomic.sign ./wallets/bob.tr
+
 btc-cold finalize --publish regtest ./wallets/atomic.sign -e $electrum_host -p $electrum_port
 
 # 7- Check Transfer
 b01 generatetoaddress 1 $(echo $addr1)
-rgbstd1 consignment validate /var/lib/rgb/atomic.rgbc "$electrum_host:$electrum_port"
+rgbstd1 consignment validate /var/lib/rgb/bob.rgbc "$electrum_host:$electrum_port"
+rgbstd1 consignment validate /var/lib/rgb/alice.rgbc "$electrum_host:$electrum_port"
 
-# 8- Consume Transfer
-rgb01 transfer consume /var/lib/rgb/bob.rgbc
-rgb01 transfer consume /var/lib/rgb/alice.rgbc
-
-# 9- Reveal Transfer
+# 8- Consume and Reveal Transfer
 rgb01 transfer consume /var/lib/rgb/bob.rgbc --reveal "tapret1st@$bob_change_txid:$bob_change_vout#$bob_reveal"
 rgb01 transfer consume /var/lib/rgb/alice.rgbc --reveal "tapret1st@$alice_change_txid:$alice_change_vout#$alice_reveal"
 ```
@@ -142,16 +144,4 @@ echo $wl2 > ./wallets/alice.desc
 # 3- Generate Wallets
 btc-cold create ./wallets/bob.desc ./wallets/bob.wallet -e $electrum_host -p $electrum_port
 btc-cold create ./wallets/alice.desc ./wallets/alice.wallet -e $electrum_host -p $electrum_port
-```
-
-
-### _Bonus: Sign and Publish PSBT_
-
-```bash
-# 1- Sign PSBT(TODO)
-# docker cp [DOCKER_CONTAINER_ID]:/var/lib/rgb/atomic.psbt ./wallets/atomic.sign    <--- for docker noobs =)
-btc-hot sign ./wallets/atomic.sign --accounts ./wallets/bob.tr ./wallets/alice.tr
-
-# 2- Send PSBT transaction
-btc-cold finalize --publish regtest ./wallets/fungible.sign -e $electrum_host -p $electrum_port
 ```
