@@ -33,7 +33,7 @@ services:
     expose: [63963]
     networks:
       lbnet:
-        ipv4_address: 172.20.0.14
+        ipv4_address: 172.20.0.18
         aliases:
           - ${RGB_HOST_1}
 
@@ -61,7 +61,7 @@ services:
     expose: [63963]
     networks:
       lbnet:
-        ipv4_address: 172.20.0.16
+        ipv4_address: 172.20.0.20
         aliases:
           - ${RGB_HOST_2}
 
@@ -78,7 +78,7 @@ services:
     expose: [60960, 64964]
     networks:
       lbnet:
-        ipv4_address: 172.20.0.18
+        ipv4_address: 172.20.0.22
 
   store2:
     container_name: store2
@@ -115,7 +115,7 @@ services:
     expose: [9999, 40940, 64964, 64965]
     networks:
       lbnet:
-        ipv4_address: 172.20.0.20
+        ipv4_address: 172.20.0.26
 
   storm2:
     container_name: storm2
@@ -137,4 +137,4 @@ services:
     expose: [9999, 40940, 64964, 64965]
     networks:
       lbnet:
-        ipv4_address: 172.20.0.26
+        ipv4_address: 172.20.0.28

@@ -90,6 +90,8 @@ b02 -rpcwallet=beta listunspent
 lnpd1 init # tprv8gD6szk1Vr8Bm3dY4wpxodYwkZihHM8XLWypXiUTcuQamaMwUHKDoJZJfjY3kCCzRe9PUmeWz3UtQtPJnbJsykoarXpQrgNqu2vXUcydtR2
 lnpd2 init # tprv8ZgxMBicQKsPdXjTY8BuF4WPhEhfGELSMiZM1XfLNcR2hka3wTKPqakbpMDHedYaRBJwPBeADqRnGPNHGCuqk9FUVmj5fJrzvbnoQPoTTTN
 
+lnd01 create
+
 # 2- Up and running nodes
 docker-compose up -d lnp1 lnp2 cln1 cln2
 

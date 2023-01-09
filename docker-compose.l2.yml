@@ -2,6 +2,7 @@ version: "3.7"
 volumes:
   cln1_data:
   cln2_data:
+  lnd1_data:
   lnp1_data:
   lnp2_data:
 
@@ -83,7 +84,7 @@ services:
         "--bitcoin-rpcconnect=${BITCOIN_HOST_1}",
         "--bitcoin-rpcport=${BITCOIN_RPC_PORT}",
         "--bitcoin-rpcuser=${BITCOIN_RPC_USER}",
-        "--bitcoin-rpcpassword=${BITCOIN_RPC_PASSWORD}",
+        "--bitcoin-rpcpassword=${BITCOIN_RPC_PASS}",
       ]
     depends_on:
       - node1
@@ -111,14 +112,45 @@ services:
         "--bitcoin-rpcconnect=${BITCOIN_HOST_1}",
         "--bitcoin-rpcport=${BITCOIN_RPC_PORT}",
         "--bitcoin-rpcuser=${BITCOIN_RPC_USER}",
-        "--bitcoin-rpcpassword=${BITCOIN_RPC_PASSWORD}",
+        "--bitcoin-rpcpassword=${BITCOIN_RPC_PASS}",
       ]
     depends_on:
       - node1
     networks:
       lbnet:
-        ipv4_address: 172.20.0.30
+        ipv4_address: 172.20.0.14
         aliases:
           - ${CLN_HOST_2}
     volumes:
       - cln2_data:/root/.lightning
+
+  lnd1:
+    container_name: lnd1
+    image: sr/lnd1:latest
+    build:
+      context: ./lnd/
+    restart: unless-stopped
+    expose: [9735 10009]
+    command:
+      [
+        "--debuglevel=debug",
+        "--bitcoin.active",
+        "--bitcoin.regtest",
+        "--rpclisten=localhost:10009",
+        "--rpclisten=${LND_HOST_1}:10009",
+        "--bitcoin.node=bitcoind",
+        "--bitcoind.rpchost=${BITCOIN_HOST_1}:${BITCOIN_RPC_PORT}",
+        "--bitcoind.rpcuser=${BITCOIN_RPC_USER}",
+        "--bitcoind.rpcpass=${BITCOIN_RPC_PASS}",
+        "--bitcoind.zmqpubrawtx=tcp://${BITCOIN_HOST_1}:${BITCOIN_ZMQ_TX_PORT}",
+        "--bitcoind.zmqpubrawblock=tcp://${BITCOIN_HOST_1}:${BITCOIN_ZMQ_BLOCK_PORT}",
+      ]
+    depends_on:
+      - node1
+    networks:
+      lbnet:
+        ipv4_address: 172.20.0.16
+        aliases:
+          - ${LND_HOST_1}
+    volumes:
+      - lnd1_data:/root/.lnd

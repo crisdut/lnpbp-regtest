@@ -26,6 +26,6 @@ services:
       - ${ELECTRS_PORT}:${ELECTRS_PORT}
     networks:
       lbnet:
-        ipv4_address: 172.20.0.22
+        ipv4_address: 172.20.0.30
         aliases:
           - ${ELECTRS_HOST}
