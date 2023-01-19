@@ -85,6 +85,7 @@ services:
         "--bitcoin-rpcport=${BITCOIN_RPC_PORT}",
         "--bitcoin-rpcuser=${BITCOIN_RPC_USER}",
         "--bitcoin-rpcpassword=${BITCOIN_RPC_PASS}",
+        "--log-level=debug"
       ]
     depends_on:
       - node1
@@ -113,6 +114,7 @@ services:
         "--bitcoin-rpcport=${BITCOIN_RPC_PORT}",
         "--bitcoin-rpcuser=${BITCOIN_RPC_USER}",
         "--bitcoin-rpcpassword=${BITCOIN_RPC_PASS}",
+        "--log-level=debug"
       ]
     depends_on:
       - node1

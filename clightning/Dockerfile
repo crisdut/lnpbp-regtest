@@ -1,59 +1,30 @@
 FROM debian:buster-slim as bitcoin-builder
 
-ARG SOURCE_CODE=https://github.com/crisdut/bitcoin.git
-ARG BUILDER_SOURCE=/opt/src
-ARG BUILDER_DIR=/opt/bitcoin
-ARG BITCOIN_VERSION=v24.0
-
 RUN apt-get update -qq && \
     apt-get install -qq -y --no-install-recommends \
-        build-essential \
-        ca-certificates \
-        autoconf \
-        automake \
-        chrpath \
-        file \
-        dirmngr \
-        gettext \
-        gnupg \
-        pkg-config \
-        libevent-dev \
-        libpq-dev \
-        libtool \
-        libffi-dev \
-        libsqlite3-dev \
-        libboost-dev \
-        libboost-chrono-dev libboost-filesystem-dev libboost-program-options-dev libboost-system-dev \
-        libboost-test-dev libboost-thread-dev \
-        git wget net-tools
+    build-essential \
+    ca-certificates \
+    wget
+
+ENV BITCOIN_VERSION=24.0
+ENV BITCOIN_ARCH="x86_64"
+ENV BITCOIN_TARBALL="bitcoin-${BITCOIN_VERSION}-${BITCOIN_ARCH}-linux-gnu.tar.gz"
+ENV BITCOIN_URL="https://bitcoincore.org/bin/bitcoin-core-$BITCOIN_VERSION/$BITCOIN_TARBALL"
+ENV BITCOIN_ASC_URL="https://bitcoincore.org/bin/bitcoin-core-$BITCOIN_VERSION/SHA256SUMS.asc"
+ENV BUILDER_DIR=/opt/bitcoin
 
 WORKDIR $BUILDER_DIR
-WORKDIR $BUILDER_SOURCE
-RUN git clone $SOURCE_CODE
-
-WORKDIR $BUILDER_SOURCE/bitcoin
-RUN git checkout $BITCOIN_VERSION
-
-RUN ./autogen.sh
-RUN ./configure \
-    LDFLAGS=-L`ls -d /opt/db*`/lib/ CPPFLAGS=-I`ls -d /opt/db*`/include/ \
-    # Enable Fuzz tests
-    # CC=clang CXX=clang++ \
-    # --enable-c++17 --enable-fuzz --with-sanitizers=address,fuzzer,undefined \
-    --prefix=${BUILDER_DIR} \
-    --mandir=/usr/share/man \
-    --disable-tests \
-    --disable-bench \
-    --disable-ccache \
-    --with-gui=no \
-    --with-utils \
-    --with-libs \
-    --with-daemon \
-    --with-sqlite \
-    --without-bdb
-
-RUN make -j "$(($(nproc)+1))"
-RUN make install
+RUN echo "Extract and verify"
+RUN wget -qO $BITCOIN_TARBALL $BITCOIN_URL
+RUN wget -qO bitcoin.asc "$BITCOIN_ASC_URL"
+# RUN grep $BITCOIN_TARBALL bitcoin.asc | sha256sum -c
+# RUN sha256sum -c SHA256SUMS.asc
+RUN tar -xzvf $BITCOIN_TARBALL "bitcoin-${BITCOIN_VERSION}/bin/bitcoin-cli" --strip-components=1
+RUN tar -xzvf $BITCOIN_TARBALL "bitcoin-${BITCOIN_VERSION}/lib/" --strip-components=1
+RUN tar -xzvf $BITCOIN_TARBALL "bitcoin-${BITCOIN_VERSION}/include/" --strip-components=1
+RUN echo "Showing current working directory"
+RUN echo "Cleaning up"
+RUN rm $BITCOIN_TARBALL
 
 FROM debian:buster-slim as lightning-builder
 ENV SOURCE_CODE=https://github.com/crisdut/lightning.git
@@ -61,7 +32,7 @@ ENV SOURCE_CODE=https://github.com/crisdut/lightning.git
 ENV BUILDER_SOURCE=/opt/src
 ENV BUILDER_DIR=/opt/lightning
 
-ENV DEVELOPER=0
+ENV DEVELOPER=1
 ENV PYTHON_VERSION=3
 ENV LIGHTNING_VERSION=v22.11
 
@@ -117,16 +88,14 @@ WORKDIR $BUILDER_SOURCE/lightning
 RUN git checkout $LIGHTNING_VERSION
 RUN git submodule update --init --recursive
 
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python3 - \
+RUN curl -sSL https://install.python-poetry.org | python3 - \
     && pip3 install -U pip \
     && pip3 install -U wheel \
-    && pip3 install -U mako Mako \
-    && /root/.local/bin/poetry config virtualenvs.create false \
     && /root/.local/bin/poetry install
 
-RUN ./configure --prefix=${BUILDER_DIR} --enable-static
-RUN make -j "$(($(nproc)+1))" DEVELOPER=${DEVELOPER}
-RUN make install
+RUN ./configure --prefix=${BUILDER_DIR} --enable-static && \
+    make -j "$(($(nproc)+1))" DEVELOPER=${DEVELOPER} && \
+    /root/.local/bin/poetry run make install
 
 # Runtime
 FROM debian:buster-slim as runtime
