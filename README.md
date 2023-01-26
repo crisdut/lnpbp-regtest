@@ -95,31 +95,22 @@ lnd01 create
 # 2- Up and running nodes
 docker-compose up -d lnp1 lnp2 cln1 cln2 lnd01
 
-# 3- Connect nodes (Bifrost)
-lnp1_ip='172.20.0.8'
-lnp1_port='9997'
-lnp2_ip='172.20.0.10'
-lnp2_port='9998'
-
-lnp01 listen --bifrost -p $lnp1_port
-lnp02 listen --bifrost -p $lnp2_port
-
-lnp02 info --bifrost # get pb2
-lnp01 connect "bifrost://$pb2@$lnp2_ip:$lnp2_port"
-
-# 4- Connect nodes (Bolt)
+# 3- Connect nodes (Bolt)
 lnp1_ip='172.20.0.8'
 lnp1_port='9735'
+lnp2_ip='172.20.0.10'
+lnp2_port='9735'
 cln1_ip='172.20.0.12'
-cln1_port='19755'
-cln2_ip='172.20.0.30'
-cln2_port='19755'
+cln1_port='19846'
 
 lnp01 listen --bolt -p $lnp1_port
 lnp02 listen --bolt -p $lnp2_port
 
-cln01 getinfo # get pb3
-lnp01 connect "bolt://$pb3@$cln1_ip:$cln1_port"
+lnp02 info --bolt # get pb2
+lnp01 connect "bolt://$pb2@$lnp2_ip:$lnp2_port" # cln01 connect $p1  $lnp1_ip $lnp1_port
+lnp01 open "$pb2@$lnp2_ip:$lnp2_port" 100000 --fee-rate 50
+
+# 4- Connect nodes (Bifrost)
 
 # 5 - Check peers
 lnp01 peers
